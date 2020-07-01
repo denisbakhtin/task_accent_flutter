@@ -36,21 +36,25 @@ class _EditTaskPageState extends State<EditTaskPage> {
           task.attachedFiles ??= [];
         }
       });
-    }, onError: (Object err) {
-      setState(() => error = err.toString());
     });
     //service's create and update methods, write into List streams
     tasksSubscription = taskService.listenList((list) {
       widget.onUpdate(); //fire callback to refresh list
       Navigator.pop(context);
-    }, onError: (Object err) {
-      setState(() => error = err.toString());
     });
 
     if (widget.id > 0)
-      taskService.get(id: widget.id);
+      fetch();
     else
       task = Task(priority: PRIORITY4);
+  }
+
+  fetch() async {
+    try {
+      await taskService.get(id: widget.id);
+    } catch (e) {
+      setState(() => error = e.toString());
+    }
   }
 
   @override
@@ -68,10 +72,14 @@ class _EditTaskPageState extends State<EditTaskPage> {
   void onSave() async {
     task.name = _nameController.text;
     task.description = _descriptionController.text;
-    if (widget.id > 0)
-      await taskService.update(task);
-    else
-      await taskService.create(task);
+    try {
+      if (widget.id > 0)
+        await taskService.update(task);
+      else
+        await taskService.create(task);
+    } catch (e) {
+      setState(() => error = e.toString());
+    }
   }
 
   @override

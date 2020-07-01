@@ -25,10 +25,6 @@ class UserService extends ServiceController<User> {
     });
 
     var response = await req.executeRequest(store);
-    if (response.error != null) {
-      addError(response.error);
-      return null;
-    }
 
     switch (response.statusCode) {
       case 200:
@@ -36,10 +32,10 @@ class UserService extends ServiceController<User> {
         store.token = token.token;
         return getAuthenticatedUser();
       default:
-        addError(new APIError(response.body["error"]));
+        throw (response.body is Map<String, dynamic>)
+            ? response.body["error"]
+            : response.body;
     }
-
-    return null;
   }
 
   Future<User> register(String email, String password) async {
@@ -47,32 +43,23 @@ class UserService extends ServiceController<User> {
         new Request.post("/register", {"email": email, "password": password});
 
     var response = await req.executeRequest(store);
-    if (response.error != null) {
-      addError(response.error);
-      return null;
-    }
 
     switch (response.statusCode) {
       case 200:
         return getAuthenticatedUser();
       case 409:
-        addError(new APIError("User already exists"));
+        throw "User already exists";
         break;
       default:
-        addError(new APIError(response.body["error"]));
+        throw (response.body is Map<String, dynamic>)
+            ? response.body["error"]
+            : response.body;
     }
-
-    return null;
   }
 
   Future<User> getAuthenticatedUser() async {
     var req = new Request.get("/api/account");
     var response = await req.executeUserRequest(store);
-
-    if (response.error != null) {
-      addError(response.error);
-      return null;
-    }
 
     switch (response.statusCode) {
       case 200:
@@ -86,9 +73,9 @@ class UserService extends ServiceController<User> {
         break;
 
       default:
-        addError(new APIError(response.body["error"]));
+        throw (response.body is Map<String, dynamic>)
+            ? response.body["error"]
+            : response.body;
     }
-
-    return null;
   }
 }

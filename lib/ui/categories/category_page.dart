@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:task_accent/ui/helpers/helpers.dart';
 import '../shared.dart';
 import '../../services/services.dart';
 import '../../models/models.dart';
@@ -15,22 +16,24 @@ class _CategoryPageState extends State<CategoryPage> {
   Category category;
   Store store = GetIt.I<Store>();
   CategoryService categoryService;
-  String error;
 
   @override
   void initState() {
     super.initState();
 
     categoryService = CategoryService(store);
-    categorySubscription = categoryService.listen((proj) {
-      setState(() {
-        error = null;
-        category = proj;
-      });
-    }, onError: (Object err) {
-      setState(() => error = err.toString());
+    categorySubscription = categoryService.listen((cat) {
+      setState(() => category = cat);
     });
-    categoryService.get(id: widget.id);
+    fetch();
+  }
+
+  fetch() async {
+    try {
+      await categoryService.get(id: widget.id);
+    } catch (e) {
+      showSnackbar(context, e.toString());
+    }
   }
 
   @override

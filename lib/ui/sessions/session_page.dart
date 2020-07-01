@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:task_accent/ui/helpers/helpers.dart';
 import '../shared.dart';
 import '../../services/services.dart';
 import '../../models/models.dart';
@@ -14,21 +15,23 @@ class _SessionPageState extends State<SessionPage> {
   StreamSubscription sessionSubscription;
   Session session;
   SessionService sessionService = SessionService(GetIt.I<Store>());
-  String error;
 
   @override
   void initState() {
     super.initState();
 
     sessionSubscription = sessionService.listen((proj) {
-      setState(() {
-        error = null;
-        session = proj;
-      });
-    }, onError: (Object err) {
-      setState(() => error = err.toString());
+      setState(() => session = proj);
     });
-    sessionService.get(id: widget.id);
+    fetch();
+  }
+
+  fetch() async {
+    try {
+      await sessionService.get(id: widget.id);
+    } catch (e) {
+      showSnackbar(context, e.toString());
+    }
   }
 
   @override

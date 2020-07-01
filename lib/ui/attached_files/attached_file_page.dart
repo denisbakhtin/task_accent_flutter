@@ -1,14 +1,8 @@
 import 'package:flutter/material.dart';
 
-class AttachedFilePage extends StatefulWidget {
+class AttachedFilePage extends StatelessWidget {
   final String path;
   AttachedFilePage(this.path);
-  @override
-  _AttachedFilePageState createState() => _AttachedFilePageState();
-}
-
-class _AttachedFilePageState extends State<AttachedFilePage> {
-  String error;
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +13,7 @@ class _AttachedFilePageState extends State<AttachedFilePage> {
           height: MediaQuery.of(context).size.height,
           child: Hero(
             tag: 'imageHero',
-            child: Image.network(widget.path),
+            child: Image.network(path),
           ),
         ),
         onTap: () {

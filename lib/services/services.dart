@@ -11,4 +11,3 @@ export 'attached_file_service.dart';
 export 'http.dart';
 export 'package:get_it/get_it.dart';
 export 'dart:async';
-export 'messages.dart';

@@ -32,15 +32,11 @@ class _EditSessionPageState extends State<EditSessionPage> {
           session.taskLogs ??= [];
         }
       });
-    }, onError: (Object err) {
-      setState(() => error = err.toString());
     });
     //service's create and update methods, write into List streams
     sessionsSubscription = sessionService.listenList((list) {
       widget.onUpdate(); //fire callback to refresh list
       Navigator.pop(context);
-    }, onError: (Object err) {
-      setState(() => error = err.toString());
     });
 
     session = Session();
@@ -56,7 +52,11 @@ class _EditSessionPageState extends State<EditSessionPage> {
 
   void onSave() async {
     session.contents = _contentsController.text;
-    await sessionService.create(session);
+    try {
+      await sessionService.create(session);
+    } catch (e) {
+      setState(() => error = e.toString());
+    }
   }
 
   @override

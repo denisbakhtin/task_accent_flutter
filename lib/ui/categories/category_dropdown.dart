@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:task_accent/ui/helpers/helpers.dart';
 import '../../models/models.dart';
 import '../../services/services.dart';
 
@@ -23,8 +24,16 @@ class _CategoryDropdownWidgetState extends State<CategoryDropdownWidget> {
 
     categoriesSubscription = categoryService.listenList((list) {
       setState(() => categories = list ?? []);
-    }, onError: (Object err) {});
-    categoryService.getList();
+    });
+    fetch();
+  }
+
+  fetch() async {
+    try {
+      await categoryService.getList();
+    } catch (e) {
+      showSnackbar(context, e.toString());
+    }
   }
 
   @override

@@ -14,7 +14,6 @@ class _SpentPageState extends State<SpentPage> {
   List<TaskLog> logs = [];
   List<Project> projects = [];
   ReportService reportService = ReportService(GetIt.I<Store>());
-  String error;
 
   @override
   void initState() {
@@ -22,14 +21,19 @@ class _SpentPageState extends State<SpentPage> {
 
     sessionsSubscription = reportService.listenList((list) {
       setState(() {
-        error = null;
         logs = list ?? [];
         projects = groupLogsByProject(logs);
       });
-    }, onError: (Object err) {
-      setState(() => error = err.toString());
     });
-    reportService.getSpent();
+    fetch();
+  }
+
+  fetch() async {
+    try {
+      await reportService.getSpent();
+    } catch (e) {
+      showSnackbar(context, e.toString());
+    }
   }
 
   @override

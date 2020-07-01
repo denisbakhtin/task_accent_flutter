@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:task_accent/ui/helpers/helpers.dart';
 import '../shared.dart';
 import 'dart:async';
 import 'package:get_it/get_it.dart';
@@ -15,21 +16,23 @@ class _TasksPageState extends State<TasksPage> {
   StreamSubscription tasksSubscription;
   List<Task> tasks = [];
   TaskService taskService = TaskService(GetIt.I<Store>());
-  String error;
 
   @override
   void initState() {
     super.initState();
 
     tasksSubscription = taskService.listenList((list) {
-      setState(() {
-        error = null;
-        tasks = list ?? [];
-      });
-    }, onError: (Object err) {
-      setState(() => error = err.toString());
+      setState(() => tasks = list ?? []);
     });
-    taskService.getList();
+    fetch();
+  }
+
+  fetch() async {
+    try {
+      await taskService.getList();
+    } catch (e) {
+      showSnackbar(context, e.toString());
+    }
   }
 
   @override

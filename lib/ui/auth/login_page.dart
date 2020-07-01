@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import '../../services/services.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../shared.dart';
 
 const registerUrl = baseURL + "/#!/register";
 
@@ -20,7 +21,6 @@ class _LoginPageState extends State<LoginPage> {
   bool obscurePassword;
   var _scaffoldKey = new GlobalKey<ScaffoldState>();
   String error;
-  StreamSubscription userSubscription;
 
   @override
   void initState() {
@@ -29,14 +29,6 @@ class _LoginPageState extends State<LoginPage> {
     _passwordController = TextEditingController();
     obscurePassword = true;
     seedControllers();
-
-    userSubscription = _userService.listen((user) {
-      //home screen is switched in main.dart, nothing to do here
-    }, onError: (Object err) {
-      setState(() {
-        error = err.toString();
-      });
-    });
   }
 
   void seedControllers() async {
@@ -48,7 +40,6 @@ class _LoginPageState extends State<LoginPage> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
-    userSubscription.cancel();
     super.dispose();
   }
 
@@ -59,7 +50,11 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void onSubmit(BuildContext context) async {
-    _userService.login(_emailController.text, _passwordController.text);
+    try {
+      await _userService.login(_emailController.text, _passwordController.text);
+    } catch (e) {
+      setState(() => error = e.toString());
+    }
   }
 
   _launchURL(String path) async {
@@ -135,14 +130,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                 ),
-                error != null
-                    ? Center(
-                        child: Text(
-                          error,
-                          style: TextStyle(color: theme.primaryColorLight),
-                        ),
-                      )
-                    : SizedBox(height: 0.0),
+                Error(error),
                 SizedBox(height: 8.0),
                 RaisedButton(
                   padding: EdgeInsets.all(20.0),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:task_accent/ui/helpers/helpers.dart';
 import '../shared.dart';
 import '../../services/services.dart';
 import '../../models/models.dart';
@@ -15,21 +16,23 @@ class _ProjectPageState extends State<ProjectPage> {
   StreamSubscription projectSubscription;
   Project project;
   ProjectService projectService = ProjectService(GetIt.I<Store>());
-  String error;
 
   @override
   void initState() {
     super.initState();
 
     projectSubscription = projectService.listen((proj) {
-      setState(() {
-        error = null;
-        project = proj;
-      });
-    }, onError: (Object err) {
-      setState(() => error = err.toString());
+      setState(() => project = proj);
     });
-    projectService.get(id: widget.id);
+    fetch();
+  }
+
+  fetch() async {
+    try {
+      await projectService.get(id: widget.id);
+    } catch (e) {
+      showSnackbar(context, e.toString());
+    }
   }
 
   @override
@@ -38,7 +41,13 @@ class _ProjectPageState extends State<ProjectPage> {
     projectSubscription.cancel();
   }
 
-  onUpdate() => projectService.get(id: widget.id);
+  onUpdate() async {
+    try {
+      await projectService.get(id: widget.id);
+    } catch (e) {
+      showSnackbar(context, e.toString());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

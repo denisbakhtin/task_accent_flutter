@@ -35,8 +35,12 @@ class _SessionPreviewWidgetState extends State<SessionPreviewWidget> {
         switch (value) {
           case 'Delete':
             showYesNoDialog(context, 'Are you sure?', () async {
-              await sessionService.delete(widget.session);
-              widget.onUpdate();
+              try {
+                await sessionService.delete(widget.session);
+                widget.onUpdate();
+              } catch (e) {
+                showSnackbar(context, e.toString());
+              }
             });
             break;
         }

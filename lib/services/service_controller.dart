@@ -20,16 +20,13 @@ class ServiceController<T> implements EventEntitySink<T> {
   StreamController<T> _controller;
   StreamController<List<T>> _listController;
 
-  StreamSubscription<T> listen(void onData(T event),
-      {Function onError, void onDone(), bool cancelOnError: false}) {
-    return _controller.stream.listen(onData,
-        onError: onError, onDone: onDone, cancelOnError: cancelOnError);
+  StreamSubscription<T> listen(void onData(T event), {void onDone()}) {
+    return _controller.stream.listen(onData, onDone: onDone);
   }
 
   StreamSubscription<List<T>> listenList(void onData(List<T> event),
-      {Function onError, void onDone(), bool cancelOnError: false}) {
-    return _listController.stream.listen(onData,
-        onError: onError, onDone: onDone, cancelOnError: cancelOnError);
+      {void onDone()}) {
+    return _listController.stream.listen(onData, onDone: onDone);
   }
 
   @override
@@ -40,16 +37,6 @@ class ServiceController<T> implements EventEntitySink<T> {
   @override
   void addList(List<T> listEvent) {
     _listController.add(listEvent);
-  }
-
-  @override
-  void addError(Object errorEvent, [StackTrace trace]) {
-    _controller.addError(errorEvent, trace);
-  }
-
-  @override
-  void addListError(Object errorEvent, [StackTrace trace]) {
-    _listController.addError(errorEvent, trace);
   }
 
   @override
@@ -70,11 +57,6 @@ class ServiceController<T> implements EventEntitySink<T> {
     var req = Request.get(url);
     var response = await req.executeUserRequest(store);
 
-    if (response.error != null) {
-      addListError(response.error);
-      return null;
-    }
-
     switch (response.statusCode) {
       case 200:
         {
@@ -88,23 +70,16 @@ class ServiceController<T> implements EventEntitySink<T> {
         break;
 
       default:
-        addListError(APIError((response.body is Map<String, dynamic>)
+        throw (response.body is Map<String, dynamic>)
             ? response.body["error"]
-            : response.body));
+            : response.body;
     }
-
-    return null;
   }
 
   @protected
   Future<T> get({int id, @required String url}) async {
     var req = Request.get(url);
     var response = await req.executeUserRequest(store);
-
-    if (response.error != null) {
-      addError(response.error);
-      return null;
-    }
 
     switch (response.statusCode) {
       case 200:
@@ -117,23 +92,16 @@ class ServiceController<T> implements EventEntitySink<T> {
         break;
 
       default:
-        addListError(APIError((response.body is Map<String, dynamic>)
+        throw (response.body is Map<String, dynamic>)
             ? response.body["error"]
-            : response.body));
+            : response.body;
     }
-
-    return null;
   }
 
   @protected
   Future<T> create(T element, {@required String url}) async {
     var req = Request.post(url, _toJson(element));
     var response = await req.executeUserRequest(store);
-
-    if (response.error != null) {
-      addListError(response.error);
-      return null;
-    }
 
     switch (response.statusCode) {
       case 200:
@@ -147,23 +115,16 @@ class ServiceController<T> implements EventEntitySink<T> {
         break;
 
       default:
-        addListError(APIError((response.body is Map<String, dynamic>)
+        throw (response.body is Map<String, dynamic>)
             ? response.body["error"]
-            : response.body));
+            : response.body;
     }
-
-    return null;
   }
 
   @protected
   Future<T> update(T element, {@required String url}) async {
     var req = Request.put(url, _toJson(element));
     var response = await req.executeUserRequest(store);
-
-    if (response.error != null) {
-      addError(response.error);
-      return null;
-    }
 
     switch (response.statusCode) {
       case 200:
@@ -184,23 +145,16 @@ class ServiceController<T> implements EventEntitySink<T> {
         break;
 
       default:
-        addListError(APIError((response.body is Map<String, dynamic>)
+        throw (response.body is Map<String, dynamic>)
             ? response.body["error"]
-            : response.body));
+            : response.body;
     }
-
-    return null;
   }
 
   @protected
   delete(T element, {@required String url}) async {
     var req = Request.delete(url);
     var response = await req.executeUserRequest(store);
-
-    if (response.error != null) {
-      addListError(response.error);
-      return;
-    }
 
     switch (response.statusCode) {
       case 200:
@@ -213,12 +167,10 @@ class ServiceController<T> implements EventEntitySink<T> {
         break;
 
       default:
-        addListError(APIError((response.body is Map<String, dynamic>)
+        throw (response.body is Map<String, dynamic>)
             ? response.body["error"]
-            : response.body));
+            : response.body;
     }
-
-    return;
   }
 
   T _fromJson(dynamic m) {

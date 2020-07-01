@@ -77,46 +77,38 @@ class Request {
   }
 
   Future<Response> executeRequest(Store store) async {
-    try {
-      if (body != null) {
-        body = json.encode(body);
-      }
-      if (method == "GET")
-        return new Response.fromHTTPResponse(
-            await http.get(baseURL + path, headers: headers));
-      else if (method == "POST")
-        return new Response.fromHTTPResponse(
-            await http.post(baseURL + path, headers: headers, body: body));
-      else if (method == "PUT")
-        return new Response.fromHTTPResponse(
-            await http.put(baseURL + path, headers: headers, body: body));
-      else if (method == "DELETE")
-        return new Response.fromHTTPResponse(
-            await http.delete(baseURL + path, headers: headers));
-      else
-        throw 'Unsupported HTTP method';
-    } catch (e) {
-      return new Response.failed(e);
+    if (body != null) {
+      body = json.encode(body);
     }
+    if (method == "GET")
+      return new Response.fromHTTPResponse(
+          await http.get(baseURL + path, headers: headers));
+    else if (method == "POST")
+      return new Response.fromHTTPResponse(
+          await http.post(baseURL + path, headers: headers, body: body));
+    else if (method == "PUT")
+      return new Response.fromHTTPResponse(
+          await http.put(baseURL + path, headers: headers, body: body));
+    else if (method == "DELETE")
+      return new Response.fromHTTPResponse(
+          await http.delete(baseURL + path, headers: headers));
+    else
+      throw 'Unsupported HTTP method';
   }
 
   Future<Response> executeMultipartRequest(Store store) async {
-    try {
-      if (body != null) {
-        body = json.encode(body);
-      }
-
-      var request = http.MultipartRequest(method, Uri.parse(baseURL + path));
-      request.headers[authorizationHeader] = headers[authorizationHeader];
-      var file = File(filePath);
-      request.files.add(http.MultipartFile(
-          fileField, file.readAsBytes().asStream(), file.lengthSync(),
-          filename: filePath.split("/").last));
-      return new Response.fromHTTPResponse(
-          await http.Response.fromStream(await request.send()));
-    } catch (e) {
-      return new Response.failed(e);
+    if (body != null) {
+      body = json.encode(body);
     }
+
+    var request = http.MultipartRequest(method, Uri.parse(baseURL + path));
+    request.headers[authorizationHeader] = headers[authorizationHeader];
+    var file = File(filePath);
+    request.files.add(http.MultipartFile(
+        fileField, file.readAsBytes().asStream(), file.lengthSync(),
+        filename: filePath.split("/").last));
+    return new Response.fromHTTPResponse(
+        await http.Response.fromStream(await request.send()));
   }
 
   String _authHeaderValue(String token) => "Bearer $token";
@@ -132,11 +124,8 @@ class Response {
     }
   }
 
-  Response.failed(this.error);
-
   int statusCode;
   dynamic body;
-  Object error;
 }
 
 class UnauthenticatedException implements Exception {}

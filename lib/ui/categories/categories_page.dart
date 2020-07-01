@@ -15,7 +15,6 @@ class _CategoriesPageState extends State<CategoriesPage> {
   List<Category> categories = [];
   Store store = GetIt.I<Store>();
   CategoryService categoryService;
-  String error;
 
   @override
   void initState() {
@@ -23,14 +22,18 @@ class _CategoriesPageState extends State<CategoriesPage> {
 
     categoryService = CategoryService(store);
     categoriesSubscription = categoryService.listenList((list) {
-      setState(() {
-        error = null;
-        categories = list ?? [];
-      });
-    }, onError: (Object err) {
-      setState(() => error = err.toString());
+      setState(() => categories = list ?? []);
     });
-    categoryService.getList();
+
+    fetch();
+  }
+
+  fetch() async {
+    try {
+      await categoryService.getList();
+    } catch (e) {
+      showSnackbar(context, e.toString());
+    }
   }
 
   @override

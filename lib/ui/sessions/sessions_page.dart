@@ -14,25 +14,32 @@ class _SessionsPageState extends State<SessionsPage> {
   StreamSubscription sessionsSubscription;
   List<Session> sessions = [];
   SessionService sessionService = SessionService(GetIt.I<Store>());
-  String error;
 
   @override
   void initState() {
     super.initState();
 
     sessionsSubscription = sessionService.listenList((list) {
-      setState(() {
-        error = null;
-        sessions = list ?? [];
-      });
-    }, onError: (Object err) {
-      setState(() => error = err.toString());
-      showSnackbar(context, error);
+      setState(() => sessions = list ?? []);
     });
-    sessionService.getList();
+    fetch();
   }
 
-  void onUpdate() => sessionService.getList();
+  fetch() async {
+    try {
+      await sessionService.getList();
+    } catch (e) {
+      showSnackbar(context, e.toString());
+    }
+  }
+
+  void onUpdate() async {
+    try {
+      await sessionService.getList();
+    } catch (e) {
+      showSnackbar(context, e.toString());
+    }
+  }
 
   @override
   void dispose() {

@@ -1,6 +1,6 @@
 /*
  * !!!! Copied from dart-sdk and extended for both T and List<T>. See EventSink<T> for original declaration.
- * A [Sink] that supports errors.
+ * A [Sink] that supports errors... no longer :) All service errors are thrown as exceptions
  *
  * This makes it suitable for capturing the results of asynchronous
  * computations, which can complete with a value or an error.
@@ -28,13 +28,13 @@ abstract class EventEntitySink<T> {
    *
    * Must not be called on a closed sink.
    */
-  void addError(Object error, [StackTrace stackTrace]);
+  //void addError(Object error, [StackTrace stackTrace]);
   /*
    * Adds an [listError] to the sink.
    *
    * Must not be called on a closed sink.
    */
-  void addListError(Object error, [StackTrace stackTrace]);
+  //void addListError(Object error, [StackTrace stackTrace]);
 
   /*
    * Closes both sinks.

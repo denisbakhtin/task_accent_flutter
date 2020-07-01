@@ -37,20 +37,24 @@ class _EditCommentPageState extends State<EditCommentPage> {
           comment.attachedFiles ??= [];
         }
       });
-    }, onError: (Object err) {
-      setState(() => error = err.toString());
     });
     commentsSubscription = commentService.listenList((list) {
       widget.onUpdate();
       Navigator.pop(context);
-    }, onError: (Object err) {
-      setState(() => error = err.toString());
     });
 
     if (widget.id > 0)
-      commentService.get(id: widget.id);
+      fetch();
     else
       comment = Comment(taskId: widget.taskId, isSolution: widget.isSolution);
+  }
+
+  fetch() async {
+    try {
+      await commentService.get(id: widget.id);
+    } catch (e) {
+      setState(() => error = e.toString());
+    }
   }
 
   onFilesChange(List<AttachedFile> files) =>
@@ -58,10 +62,14 @@ class _EditCommentPageState extends State<EditCommentPage> {
 
   onSave() async {
     comment.contents = _contentsController.text;
-    if (widget.id > 0)
-      await commentService.update(comment);
-    else
-      await commentService.create(comment);
+    try {
+      if (widget.id > 0)
+        await commentService.update(comment);
+      else
+        await commentService.create(comment);
+    } catch (e) {
+      setState(() => error = e.toString());
+    }
   }
 
   @override

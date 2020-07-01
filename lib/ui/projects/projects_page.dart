@@ -14,21 +14,23 @@ class _ProjectsPageState extends State<ProjectsPage> {
   StreamSubscription projectsSubscription;
   List<Project> projects = [];
   ProjectService projectService = ProjectService(GetIt.I<Store>());
-  String error;
 
   @override
   void initState() {
     super.initState();
 
     projectsSubscription = projectService.listenList((list) {
-      setState(() {
-        error = null;
-        projects = list ?? [];
-      });
-    }, onError: (Object err) {
-      setState(() => error = err.toString());
+      setState(() => projects = list ?? []);
     });
-    projectService.getList();
+    fetch();
+  }
+
+  fetch() async {
+    try {
+      await projectService.getList();
+    } catch (e) {
+      showSnackbar(context, e.toString());
+    }
   }
 
   @override

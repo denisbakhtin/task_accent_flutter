@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:task_accent/ui/helpers/helpers.dart';
 import '../../models/models.dart';
 import '../../services/services.dart';
 import 'dart:async';
@@ -24,8 +25,16 @@ class _ProjectDropdownWidgetState extends State<ProjectDropdownWidget> {
 
     projectsSubscription = projectService.listenList((list) {
       setState(() => projects = list ?? []);
-    }, onError: (Object err) {});
-    projectService.getList();
+    });
+    fetch();
+  }
+
+  fetch() async {
+    try {
+      await projectService.getList();
+    } catch (e) {
+      showSnackbar(context, e.toString());
+    }
   }
 
   @override

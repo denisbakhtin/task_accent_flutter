@@ -34,20 +34,24 @@ class _EditProjectPageState extends State<EditProjectPage> {
           project.attachedFiles ??= [];
         }
       });
-    }, onError: (Object err) {
-      setState(() => error = err.toString());
     });
 
     projectsSubscription = widget.projectService.listenList((list) {
       Navigator.pop(context);
-    }, onError: (Object err) {
-      setState(() => error = err.toString());
     });
 
     if (widget.id > 0)
-      widget.projectService.get(id: widget.id);
+      fetch();
     else
       project = Project();
+  }
+
+  fetch() async {
+    try {
+      await widget.projectService.get(id: widget.id);
+    } catch (e) {
+      setState(() => error = e.toString());
+    }
   }
 
   @override
@@ -65,10 +69,14 @@ class _EditProjectPageState extends State<EditProjectPage> {
   void onSave() async {
     project.name = _nameController.text;
     project.description = _descriptionController.text;
-    if (widget.id > 0)
-      await widget.projectService.update(project);
-    else
-      await widget.projectService.create(project);
+    try {
+      if (widget.id > 0)
+        await widget.projectService.update(project);
+      else
+        await widget.projectService.create(project);
+    } catch (e) {
+      setState(() => error = e.toString());
+    }
   }
 
   @override

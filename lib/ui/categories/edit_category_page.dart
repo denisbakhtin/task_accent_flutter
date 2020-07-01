@@ -30,27 +30,35 @@ class _EditCategoryPageState extends State<EditCategoryPage> {
           _nameController.text = category.name;
         }
       });
-    }, onError: (Object err) {
-      setState(() => error = err.toString());
     });
     categoriesSubscription = widget.categoryService.listenList((list) {
       Navigator.pop(context);
-    }, onError: (Object err) {
-      setState(() => error = err.toString());
     });
 
     if (widget.id > 0)
-      widget.categoryService.get(id: widget.id);
+      fetch();
     else
       category = Category();
   }
 
+  fetch() async {
+    try {
+      await widget.categoryService.get(id: widget.id);
+    } catch (e) {
+      setState(() => error = e.toString());
+    }
+  }
+
   onSave() async {
     category.name = _nameController.text;
-    if (widget.id > 0)
-      await widget.categoryService.update(category);
-    else
-      await widget.categoryService.create(category);
+    try {
+      if (widget.id > 0)
+        await widget.categoryService.update(category);
+      else
+        await widget.categoryService.create(category);
+    } catch (e) {
+      setState(() => error = e.toString());
+    }
   }
 
   @override

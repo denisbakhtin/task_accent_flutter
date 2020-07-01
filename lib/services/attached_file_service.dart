@@ -13,11 +13,6 @@ class AttachedFileService extends ServiceController<AttachedFile> {
     var req = Request.postMultipart("/api/upload/form", filePath, "upload");
     var response = await req.executeUserMultipartRequest(store);
 
-    if (response.error != null) {
-      addListError(response.error);
-      return null;
-    }
-
     switch (response.statusCode) {
       case 200:
         {
@@ -26,8 +21,9 @@ class AttachedFileService extends ServiceController<AttachedFile> {
         break;
 
       default:
-        addListError(APIError(response.body["error"] ?? response.body));
+        throw (response.body is Map<String, dynamic>)
+            ? response.body["error"]
+            : response.body;
     }
-    return null;
   }
 }

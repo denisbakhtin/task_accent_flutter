@@ -6,7 +6,7 @@ class Error extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return (error?.length ?? 0 > 0)
+    return error != null
         ? Padding(
             padding: EdgeInsets.only(left: 8.0, right: 8.0, bottom: 16.0),
             child: Center(

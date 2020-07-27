@@ -45,7 +45,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
-    return Scaffold(
+    return AccentScaffold(
       appBar: appBar('Categories'),
       drawer: drawer(context),
       floatingActionButton: FloatingActionButton(
@@ -55,20 +55,30 @@ class _CategoriesPageState extends State<CategoriesPage> {
               FadeRoute(
                   builder: (context) => EditCategoryPage(0, categoryService)))),
       body: SafeArea(
-        child: ListView(
-          shrinkWrap: true,
-          padding: EdgeInsets.only(bottom: 64.0),
-          children: categories
-              .map((category) => ListTile(
-                    title: Text(category.name),
-                    trailing: _DropDownMenu(category, categoryService),
-                    onTap: () => Navigator.push(
-                      context,
-                      FadeRoute(
-                          builder: (context) => CategoryPage(category.id)),
-                    ),
-                  ))
-              .toList(),
+        child: RefreshIndicator(
+          child: ListView.separated(
+            shrinkWrap: true,
+            padding: EdgeInsets.only(bottom: 64.0),
+            separatorBuilder: (context, index) => ListDivider(),
+            itemCount: categories?.length ?? 0,
+            itemBuilder: (context, index) => Container(
+              color: theme.canvasColor,
+              child: ListTile(
+                title: Text(
+                  categories[index].name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                trailing: _DropDownMenu(categories[index], categoryService),
+                onTap: () => Navigator.push(
+                  context,
+                  FadeRoute(
+                      builder: (context) => CategoryPage(categories[index].id)),
+                ),
+              ),
+            ),
+          ),
+          onRefresh: () => fetch(),
         ),
       ),
     );
@@ -84,7 +94,7 @@ class _DropDownMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton(
-      icon: Icon(Icons.menu),
+      icon: Icon(Icons.more_vert),
       elevation: 16,
       onSelected: (value) {
         if (value == "Edit")

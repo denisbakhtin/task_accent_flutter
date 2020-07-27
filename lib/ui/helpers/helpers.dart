@@ -39,6 +39,19 @@ void showSnackbar(BuildContext context, String text) {
   Scaffold.of(context).showSnackBar(SnackBar(content: Text(text)));
 }
 
+Color priorityColor(int priority) {
+  switch (priority) {
+    case 1:
+      return Color(0xFFdc3545);
+    case 2:
+      return Color(0xFF00BD89);
+    case 3:
+      return Color(0xFFe0f5d7);
+    default:
+      return Color(0x00FFFFFF);
+  }
+}
+
 List<Project> groupLogsByProject(List<TaskLog> logs) {
   return groupTasksByProjects(groupLogsByTask(logs));
 }
@@ -98,4 +111,48 @@ showYesNoDialog(BuildContext context, String text, Function onYes) {
       return alert;
     },
   );
+}
+
+String humanSpent(int minutes, bool long) {
+  if (minutes == null || minutes == 0) return '';
+  var m = minutes % 60;
+  var h = (minutes / 60).floor();
+  String res = "";
+  if (long)
+    res = ((h > 0) ? "$h hours " : "") + ((m > 0) ? "$m minutes" : '');
+  else
+    res = ((h > 0) ? "${h}h " : "") + ((m > 0) ? "${m}m" : "");
+
+  return res.trim();
+}
+
+String humanTaskSpent(Task task, bool long) =>
+    humanSpent(taskSpent(task), long);
+
+int taskSpent(Task task) {
+  int sum = 0;
+  task.taskLogs?.forEach((element) => sum += element.minutes);
+  return sum;
+}
+
+String humanProjectSpent(Project project, bool long) =>
+    humanSpent(projectSpent(project), long);
+
+int projectSpent(Project project) {
+  int sum = 0;
+  project.tasks?.forEach((element) => sum += taskSpent(element));
+  return sum;
+}
+
+String humanAllProjectsSpent(List<Project> projects, bool long) {
+  projects ??= [];
+  int sum = 0;
+  projects.forEach((element) => sum += projectSpent(element));
+  return humanSpent(sum, long);
+}
+
+String humanSessionSpent(Session session, bool long) {
+  int sum = 0;
+  session.taskLogs?.forEach((element) => sum += element.minutes);
+  return humanSpent(sum, long);
 }

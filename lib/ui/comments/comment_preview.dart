@@ -30,7 +30,7 @@ class _CommentPreviewWidgetState extends State<CommentPreviewWidget> {
     ThemeData theme = Theme.of(context);
 
     var _menu = PopupMenuButton(
-      icon: Icon(Icons.menu),
+      icon: Icon(Icons.more_vert),
       elevation: 16,
       onSelected: (value) {
         switch (value) {
@@ -58,8 +58,11 @@ class _CommentPreviewWidgetState extends State<CommentPreviewWidget> {
 
     return ListTile(
       title: MarkdownBody(data: widget.comment.contents),
-      subtitle: AttachedFilesWidget(widget.comment.attachedFiles, null),
+      subtitle: (widget.comment.attachedFiles?.length ?? 0) > 0
+          ? AttachedFilesWidget(widget.comment.attachedFiles, null)
+          : null,
       trailing: _menu,
+      dense: true,
     );
   }
 }

@@ -4,6 +4,7 @@ import '../shared.dart';
 import '../../services/services.dart';
 import '../../models/models.dart';
 import '../tasks/task_preview.dart';
+import '../pages.dart';
 
 class ProjectPage extends StatefulWidget {
   final int id;
@@ -52,28 +53,50 @@ class _ProjectPageState extends State<ProjectPage> {
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
-    return Scaffold(
+    return AccentScaffold(
       appBar: appBar('Project'),
       drawer: drawer(context),
+      floatingActionButton: FloatingActionButton(
+          child: Icon(Icons.add),
+          onPressed: () => Navigator.push(
+              context,
+              FadeRoute(
+                  builder: (context) =>
+                      EditTaskPage(0, onUpdate, projectId: project.id)))),
       body: SafeArea(
-        child: Container(
-          padding: EdgeInsets.all(16.0),
-          child: project != null
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        child: project != null
+            ? RefreshIndicator(
+                child: ListView(
+                  padding:
+                      EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 64),
                   children: [
-                    Text(project.name),
+                    Text(project.name, style: theme.textTheme.headline6),
+                    SizedBox(height: 8),
+                    if (project.description?.isNotEmpty ?? false)
+                      Text(project.description,
+                          style: theme.textTheme.bodyText1),
+                    if (project.description?.isNotEmpty ?? false)
+                      SizedBox(height: 8),
+                    AttachedFilesWidget(project.attachedFiles, null),
                     SizedBox(height: 8.0),
-                    Text('Tasks'),
-                    ListView(
+                    Text('Tasks', style: theme.textTheme.subtitle1),
+                    SizedBox(height: 8.0),
+                    Container(
+                      color: Color(0x77FFFFFF),
+                      child: ListView.separated(
                         shrinkWrap: true,
-                        children: project.tasks
-                            .map((task) => TaskPreviewWidget(task, onUpdate))
-                            .toList()),
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: project.tasks?.length ?? 0,
+                        itemBuilder: (context, index) =>
+                            TaskPreviewWidget(project.tasks[index], onUpdate),
+                        separatorBuilder: (context, index) => ListDivider(),
+                      ),
+                    ),
                   ],
-                )
-              : Loading(),
-        ),
+                ),
+                onRefresh: () => fetch(),
+              )
+            : Loading(),
       ),
     );
   }

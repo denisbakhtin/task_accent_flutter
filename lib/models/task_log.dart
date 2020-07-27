@@ -10,16 +10,16 @@ class TaskLog {
   @JsonKey(name: "updated_at")
   final DateTime updateAt;
   @JsonKey(name: "task_id")
-  final int taskId;
-  final int minutes;
-  final bool commited;
+  int taskId;
+  int minutes;
+  bool commited;
   @JsonKey(name: "user_id")
   final int userId;
   final User user;
-  final Task task;
+  Task task;
   @JsonKey(name: "session_id")
-  final int sessionId;
-  final Session session;
+  int sessionId;
+  Session session;
 
   TaskLog({
     this.id,
@@ -34,6 +34,9 @@ class TaskLog {
     this.sessionId,
     this.session,
   });
+
+  factory TaskLog.fromTask(Task task) =>
+      TaskLog(task: task, taskId: task.id, minutes: 0);
 
   factory TaskLog.fromJson(Map<String, dynamic> json) =>
       _$TaskLogFromJson(json);

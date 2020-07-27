@@ -46,7 +46,10 @@ class _EditCommentPageState extends State<EditCommentPage> {
     if (widget.id > 0)
       fetch();
     else
-      comment = Comment(taskId: widget.taskId, isSolution: widget.isSolution);
+      comment = Comment(
+          taskId: widget.taskId,
+          isSolution: widget.isSolution,
+          attachedFiles: []);
   }
 
   fetch() async {
@@ -83,52 +86,43 @@ class _EditCommentPageState extends State<EditCommentPage> {
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
-    return Scaffold(
+    return AccentScaffold(
       appBar: appBar(widget.id > 0 ? 'Edit Comment' : 'New Comment'),
       drawer: drawer(context),
       body: SafeArea(
-        child: Container(
-          padding: EdgeInsets.all(16.0),
-          child: comment != null
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Material(
-                      child: TextField(
-                        controller: _contentsController,
-                        autofocus: true,
-                        minLines: 3,
-                        maxLines: 10,
-                        decoration: InputDecoration(
-                          labelText: 'Your comment',
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.all(8.0),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 8.0),
-                    SwitchListTile(
-                      title: Text('Is solution'),
-                      value: comment.isSolution,
-                      onChanged: (val) =>
-                          setState(() => comment.isSolution = val),
-                    ),
-                    SizedBox(height: 8.0),
-                    AttachedFilesWidget(comment?.attachedFiles, onFilesChange),
-                    Error(error),
-                    Row(
-                      children: <Widget>[
-                        MaterialButton(child: Text('Save'), onPressed: onSave),
-                        MaterialButton(
-                          child: Text('Cancel'),
-                          onPressed: () => Navigator.pop(context),
-                        )
-                      ],
-                    ),
-                  ],
-                )
-              : Loading(),
-        ),
+        child: comment != null
+            ? ListView(
+                padding: EdgeInsets.all(16.0),
+                children: <Widget>[
+                  MaterialInput(
+                    controller: _contentsController,
+                    autofocus: true,
+                    minLines: 3,
+                    maxLines: 10,
+                    label: 'Your comment',
+                  ),
+                  SizedBox(height: 8.0),
+                  SwitchListTile(
+                    title: Text('Is solution'),
+                    value: comment.isSolution,
+                    onChanged: (val) =>
+                        setState(() => comment.isSolution = val),
+                  ),
+                  SizedBox(height: 8.0),
+                  AttachedFilesWidget(comment?.attachedFiles, onFilesChange),
+                  Error(error),
+                  Row(
+                    children: <Widget>[
+                      PrimaryButton(text: 'Save', onPressed: onSave),
+                      DefaultButton(
+                        text: 'Cancel',
+                        onPressed: () => Navigator.pop(context),
+                      )
+                    ],
+                  ),
+                ],
+              )
+            : Loading(),
       ),
     );
   }

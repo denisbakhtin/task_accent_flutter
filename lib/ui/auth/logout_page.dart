@@ -12,7 +12,7 @@ class LogoutPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AccentScaffold(
       appBar: appBar('Participants Demo'),
       drawer: drawer(context),
       body: SafeArea(
@@ -24,8 +24,8 @@ class LogoutPage extends StatelessWidget {
               children: <Widget>[
                 Text('Thank you for using Participants Demo App.'),
                 SizedBox(height: 16.0),
-                RaisedButton(
-                  child: Text('LOGOUT'),
+                PrimaryButton(
+                  text: 'LOGOUT',
                   onPressed: () => onLogoutPressed(context),
                 ),
               ],

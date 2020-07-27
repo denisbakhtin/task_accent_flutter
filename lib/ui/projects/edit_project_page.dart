@@ -5,13 +5,14 @@ import '../../models/models.dart';
 
 class EditProjectPage extends StatefulWidget {
   final int id;
-  final ProjectService projectService;
-  EditProjectPage(this.id, this.projectService);
+  final Function onUpdate;
+  EditProjectPage(this.id, this.onUpdate);
   @override
   _EditProjectPageState createState() => _EditProjectPageState();
 }
 
 class _EditProjectPageState extends State<EditProjectPage> {
+  ProjectService projectService;
   StreamSubscription projectSubscription;
   StreamSubscription projectsSubscription;
   Project project;
@@ -24,7 +25,8 @@ class _EditProjectPageState extends State<EditProjectPage> {
   void initState() {
     super.initState();
 
-    projectSubscription = widget.projectService.listen((proj) {
+    projectService = ProjectService(GetIt.I<Store>());
+    projectSubscription = projectService.listen((proj) {
       setState(() {
         error = null;
         if (proj != null) {
@@ -36,7 +38,8 @@ class _EditProjectPageState extends State<EditProjectPage> {
       });
     });
 
-    projectsSubscription = widget.projectService.listenList((list) {
+    projectsSubscription = projectService.listenList((list) {
+      widget.onUpdate();
       Navigator.pop(context);
     });
 
@@ -48,7 +51,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
 
   fetch() async {
     try {
-      await widget.projectService.get(id: widget.id);
+      await projectService.get(id: widget.id);
     } catch (e) {
       setState(() => error = e.toString());
     }
@@ -71,9 +74,9 @@ class _EditProjectPageState extends State<EditProjectPage> {
     project.description = _descriptionController.text;
     try {
       if (widget.id > 0)
-        await widget.projectService.update(project);
+        await projectService.update(project);
       else
-        await widget.projectService.create(project);
+        await projectService.create(project);
     } catch (e) {
       setState(() => error = e.toString());
     }
@@ -82,55 +85,40 @@ class _EditProjectPageState extends State<EditProjectPage> {
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
-    return Scaffold(
+    return AccentScaffold(
       appBar: appBar(widget.id > 0 ? 'Edit Project' : 'New Project'),
       drawer: drawer(context),
       body: SafeArea(
-        child: Container(
+        child: ListView(
           padding: EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Material(
-                child: TextField(
-                  controller: _nameController,
-                  autofocus: true,
-                  decoration: InputDecoration(
-                    labelText: 'Name',
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.all(8.0),
-                  ),
-                ),
-              ),
-              SizedBox(height: 8.0),
-              Material(
-                child: TextField(
-                  controller: _descriptionController,
-                  minLines: 3,
-                  maxLines: 10,
-                  decoration: InputDecoration(
-                    labelText: 'Description',
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.all(8.0),
-                  ),
-                ),
-              ),
-              CategoryDropdownWidget(project?.categoryId,
-                  (int value) => setState(() => project.categoryId = value)),
-              SizedBox(height: 8.0),
-              AttachedFilesWidget(project?.attachedFiles, onFilesChange),
-              Error(error),
-              Row(
-                children: <Widget>[
-                  MaterialButton(child: Text('Save'), onPressed: onSave),
-                  MaterialButton(
-                    child: Text('Cancel'),
-                    onPressed: () => Navigator.pop(context),
-                  )
-                ],
-              ),
-            ],
-          ),
+          children: <Widget>[
+            MaterialInput(
+              controller: _nameController,
+              autofocus: true,
+              label: 'Name',
+            ),
+            SizedBox(height: 8.0),
+            MaterialInput(
+              controller: _descriptionController,
+              minLines: 3,
+              maxLines: 10,
+              label: 'Description',
+            ),
+            CategoryDropdownWidget(project?.categoryId,
+                (int value) => setState(() => project.categoryId = value)),
+            SizedBox(height: 8.0),
+            AttachedFilesWidget(project?.attachedFiles, onFilesChange),
+            Error(error),
+            Row(
+              children: <Widget>[
+                PrimaryButton(text: 'Save', onPressed: onSave),
+                DefaultButton(
+                  text: 'Cancel',
+                  onPressed: () => Navigator.pop(context),
+                )
+              ],
+            ),
+          ],
         ),
       ),
     );

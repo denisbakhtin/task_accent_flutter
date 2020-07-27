@@ -6,7 +6,6 @@ import '../../services/services.dart';
 Drawer drawer(BuildContext context) {
   ThemeData theme = Theme.of(context);
   var store = GetIt.I<Store>();
-  var taskService = TaskService(store);
 
   return Drawer(
     // Add a ListView to the drawer. This ensures the user can scroll
@@ -14,7 +13,7 @@ Drawer drawer(BuildContext context) {
     // space to fit everything.
     child: Container(
       decoration: BoxDecoration(
-        color: theme.primaryColor,
+        color: theme.scaffoldBackgroundColor,
       ),
       child: ListTileTheme(
         style: ListTileStyle.drawer,

@@ -4,6 +4,7 @@ import '../../services/services.dart';
 import '../../models/models.dart';
 import '../pages.dart';
 import '../helpers/helpers.dart';
+import 'project_preview.dart';
 
 class ProjectsPage extends StatefulWidget {
   @override
@@ -41,62 +42,26 @@ class _ProjectsPageState extends State<ProjectsPage> {
 
   @override
   Widget build(BuildContext context) {
-    ThemeData theme = Theme.of(context);
-    return Scaffold(
+    return AccentScaffold(
       appBar: appBar('Projects'),
       drawer: drawer(context),
       floatingActionButton: FloatingActionButton(
           child: Icon(Icons.add),
-          onPressed: () => Navigator.push(
-              context,
-              FadeRoute(
-                  builder: (context) => EditProjectPage(0, projectService)))),
+          onPressed: () => Navigator.push(context,
+              FadeRoute(builder: (context) => EditProjectPage(0, fetch)))),
       body: SafeArea(
-        child: ListView(
-          shrinkWrap: true,
-          padding: EdgeInsets.only(bottom: 64.0),
-          children: projects
-              .map((project) => ListTile(
-                    title: Text(project.name),
-                    trailing: _DropDownMenu(project, projectService),
-                    onTap: () => Navigator.push(
-                      context,
-                      FadeRoute(builder: (context) => ProjectPage(project.id)),
-                    ),
-                  ))
-              .toList(),
+        child: RefreshIndicator(
+          child: ListView.separated(
+            shrinkWrap: true,
+            padding: EdgeInsets.only(bottom: 64),
+            separatorBuilder: (context, index) => ListDivider(),
+            itemCount: projects?.length ?? 0,
+            itemBuilder: (context, index) =>
+                ProjectPreviewWidget(projects[index], fetch),
+          ),
+          onRefresh: () => fetch(),
         ),
       ),
-    );
-  }
-}
-
-class _DropDownMenu extends StatelessWidget {
-  final Project project;
-  final ProjectService projectService;
-  _DropDownMenu(this.project, this.projectService, {Key key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return PopupMenuButton(
-      icon: Icon(Icons.menu),
-      elevation: 16,
-      onSelected: (value) {
-        if (value == "Edit")
-          Navigator.push(
-            context,
-            FadeRoute(
-                builder: (context) =>
-                    EditProjectPage(project.id, projectService)),
-          );
-        if (value == "Delete")
-          showYesNoDialog(
-              context, 'Are you sure?', () => projectService.delete(project));
-      },
-      itemBuilder: (context) => [
-        PopupMenuItem(value: 'Edit', child: Text('Edit')),
-        PopupMenuItem(value: 'Delete', child: Text('Delete')),
-      ],
     );
   }
 }

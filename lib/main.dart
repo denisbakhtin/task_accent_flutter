@@ -14,6 +14,8 @@ void main() async {
   final store = Store();
   getIt.registerSingleton<Store>(store, signalsReady: true);
   getIt.registerSingleton<UserService>(UserService(store), signalsReady: true);
+  getIt.registerSingleton<ActiveTaskService>(ActiveTaskService(store),
+      signalsReady: true);
 
   runApp(App());
 }

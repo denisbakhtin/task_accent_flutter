@@ -1,6 +1,7 @@
 import 'dart:async';
 import '../models/models.dart';
 import 'service_controller.dart';
+import 'services.dart';
 import 'store.dart';
 import 'package:meta/meta.dart';
 
@@ -26,5 +27,24 @@ class ProjectService extends ServiceController<Project> {
 
   delete(Project project, {String url}) async {
     return await super.delete(project, url: '/api/projects/${project.id}');
+  }
+
+  Future<ProjectsSummary> getSummary() async {
+    var req = new Request.get("/api/projects_summary");
+    var response = await req.executeUserRequest(store);
+
+    switch (response.statusCode) {
+      case 200:
+        {
+          var summary = new ProjectsSummary.fromJson(response.body);
+          return summary;
+        }
+        break;
+
+      default:
+        throw (response.body is Map<String, dynamic>)
+            ? response.body["error"]
+            : response.body;
+    }
   }
 }

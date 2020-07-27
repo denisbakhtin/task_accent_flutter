@@ -4,6 +4,7 @@ import '../shared.dart';
 import '../../services/services.dart';
 import '../../models/models.dart';
 import 'session_preview.dart';
+import 'edit_session_page.dart';
 
 class SessionsPage extends StatefulWidget {
   @override
@@ -50,15 +51,24 @@ class _SessionsPageState extends State<SessionsPage> {
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
-    return Scaffold(
+    return AccentScaffold(
       appBar: appBar('Sessions'),
       drawer: drawer(context),
+      floatingActionButton: FloatingActionButton(
+          child: Icon(Icons.add),
+          onPressed: () => Navigator.push(context,
+              FadeRoute(builder: (context) => EditSessionPage(onUpdate)))),
       body: SafeArea(
-        child: ListView(
-          shrinkWrap: true,
-          children: sessions
-              .map((session) => SessionPreviewWidget(session, onUpdate))
-              .toList(),
+        child: RefreshIndicator(
+          child: ListView.separated(
+            padding: EdgeInsets.only(bottom: 64),
+            shrinkWrap: true,
+            separatorBuilder: (context, index) => ListDivider(),
+            itemCount: sessions?.length ?? 0,
+            itemBuilder: (context, index) =>
+                SessionPreviewWidget(sessions[index], onUpdate),
+          ),
+          onRefresh: () => fetch(),
         ),
       ),
     );

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import '../shared.dart';
 import '../../services/services.dart';
@@ -16,12 +18,22 @@ class TaskPreviewWidget extends StatefulWidget {
 
 class _TaskPreviewWidgetState extends State<TaskPreviewWidget> {
   TaskService taskService;
+  ActiveTaskService activeTaskService;
 
   @override
   void initState() {
     super.initState();
 
+    activeTaskService = GetIt.I<ActiveTaskService>();
     taskService = TaskService(GetIt.I<Store>());
+  }
+
+  onStart(BuildContext context) async {
+    try {
+      await activeTaskService.start(TaskLog.fromTask(widget.task));
+    } on SocketException catch (_) {
+      showSnackbar(context, "No internet connection.");
+    }
   }
 
   @override
@@ -29,7 +41,7 @@ class _TaskPreviewWidgetState extends State<TaskPreviewWidget> {
     ThemeData theme = Theme.of(context);
 
     var _menu = PopupMenuButton(
-      icon: Icon(Icons.menu),
+      icon: Icon(Icons.more_vert),
       elevation: 16,
       onSelected: (value) {
         switch (value) {
@@ -74,12 +86,64 @@ class _TaskPreviewWidgetState extends State<TaskPreviewWidget> {
       ],
     );
 
-    return ListTile(
-      title: Text(widget.task.name),
-      trailing: _menu,
-      onTap: () => Navigator.push(
-        context,
-        FadeRoute(builder: (context) => TaskPage(widget.task.id)),
+    Widget subtitle() {
+      List<Widget> items = [];
+      if ((widget.task.taskLogs?.length ?? 0) > 0) {
+        items.add(Icon(
+          Icons.timelapse,
+          color: theme.textTheme.bodyText1.color,
+          size: 13,
+        ));
+        items.add(SizedBox(width: 2));
+        items.add(Text(
+          humanTaskSpent(widget.task, false),
+          style: theme.textTheme.caption,
+        ));
+        items.add(SizedBox(width: 8));
+      }
+
+      if (widget.task.isExpired) {
+        items.add(Text(
+          'expired',
+          style: theme.textTheme.caption
+              .copyWith(backgroundColor: theme.primaryColorLight),
+        ));
+        items.add(SizedBox(width: 8));
+      }
+      return items.length > 0 ? Row(children: items) : null;
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+            left: BorderSide(
+                color: priorityColor(widget.task.priority), width: 5)),
+        color: theme.canvasColor,
+      ),
+      child: ListTile(
+        title: Text(
+          widget.task.name,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: subtitle(),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: Icon(
+                Icons.play_arrow,
+                color: theme.primaryColor,
+              ),
+              onPressed: () => onStart(context),
+            ),
+            _menu,
+          ],
+        ),
+        onTap: () => Navigator.push(
+          context,
+          FadeRoute(builder: (context) => TaskPage(widget.task.id)),
+        ),
       ),
     );
   }

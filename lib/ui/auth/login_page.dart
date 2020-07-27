@@ -85,9 +85,11 @@ class _LoginPageState extends State<LoginPage> {
                   child: Image.asset("images/logo.png", width: maxWidth / 2.5),
                 ),
                 SizedBox(height: 8.0),
-                isLandscape ? null : Center(child: Text('Task Accent')),
                 isLandscape
-                    ? null
+                    ? SizedBox(width: 0)
+                    : Center(child: Text('Task Accent')),
+                isLandscape
+                    ? SizedBox(width: 0)
                     : SizedBox(height: isLandscape ? 16.0 : 42.0),
                 Material(
                   child: TextField(
@@ -132,9 +134,9 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 Error(error),
                 SizedBox(height: 8.0),
-                RaisedButton(
-                  padding: EdgeInsets.all(20.0),
-                  child: Text('LOGIN'),
+                PrimaryButton(
+                  padding: EdgeInsets.all(16.0),
+                  text: 'LOGIN',
                   onPressed: () => onSubmit(context),
                 ),
                 SizedBox(height: isLandscape ? 16.0 : 36.0),
@@ -143,7 +145,7 @@ class _LoginPageState extends State<LoginPage> {
                   children: <Widget>[
                     Text(
                       "Don't have an account?",
-                      style: TextStyle(color: theme.primaryColorLight),
+                      style: TextStyle(color: theme.primaryColor),
                     ),
                     SizedBox(width: 10.0),
                     Builder(
@@ -157,7 +159,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ],
                 ),
-              ].where(notNull).toList(),
+              ],
             ),
           ),
         ),

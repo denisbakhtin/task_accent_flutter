@@ -72,39 +72,30 @@ class _EditCategoryPageState extends State<EditCategoryPage> {
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
-    return Scaffold(
+    return AccentScaffold(
       appBar: appBar('Edit Category'),
       drawer: drawer(context),
       body: SafeArea(
-        child: Container(
+        child: ListView(
           padding: EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Material(
-                child: TextField(
-                  controller: _nameController,
-                  autofocus: true,
-                  decoration: InputDecoration(
-                    labelText: 'Name',
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.all(8.0),
-                  ),
-                ),
-              ),
-              SizedBox(height: 8.0),
-              Error(error),
-              Row(
-                children: <Widget>[
-                  MaterialButton(child: Text('Save'), onPressed: onSave),
-                  MaterialButton(
-                    child: Text('Cancel'),
-                    onPressed: () => Navigator.pop(context),
-                  )
-                ],
-              ),
-            ],
-          ),
+          children: <Widget>[
+            MaterialInput(
+              controller: _nameController,
+              autofocus: true,
+              label: 'Name',
+            ),
+            SizedBox(height: 8.0),
+            Error(error),
+            Row(
+              children: <Widget>[
+                PrimaryButton(text: 'Save', onPressed: onSave),
+                DefaultButton(
+                  text: 'Cancel',
+                  onPressed: () => Navigator.pop(context),
+                )
+              ],
+            ),
+          ],
         ),
       ),
     );

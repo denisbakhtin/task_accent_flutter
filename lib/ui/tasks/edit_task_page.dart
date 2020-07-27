@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import '../../services/services.dart';
 import '../../models/models.dart';
@@ -7,7 +9,8 @@ import 'priority_dropdown.dart';
 class EditTaskPage extends StatefulWidget {
   final int id;
   final Function onUpdate;
-  EditTaskPage(this.id, this.onUpdate);
+  final int projectId;
+  EditTaskPage(this.id, this.onUpdate, {this.projectId});
   @override
   _EditTaskPageState createState() => _EditTaskPageState();
 }
@@ -46,12 +49,16 @@ class _EditTaskPageState extends State<EditTaskPage> {
     if (widget.id > 0)
       fetch();
     else
-      task = Task(priority: PRIORITY4);
+      task = Task(
+          priority: PRIORITY4, projectId: widget.projectId, attachedFiles: []);
   }
 
   fetch() async {
     try {
+      error = null;
       await taskService.get(id: widget.id);
+    } on SocketException catch (_) {
+      setState(() => error = "No internet connection");
     } catch (e) {
       setState(() => error = e.toString());
     }
@@ -77,6 +84,8 @@ class _EditTaskPageState extends State<EditTaskPage> {
         await taskService.update(task);
       else
         await taskService.create(task);
+    } on SocketException catch (_) {
+      setState(() => error = "No internet connection");
     } catch (e) {
       setState(() => error = e.toString());
     }
@@ -85,65 +94,68 @@ class _EditTaskPageState extends State<EditTaskPage> {
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
-    return Scaffold(
+    return AccentScaffold(
       appBar: appBar(widget.id > 0 ? 'Edit Task' : 'New Task'),
       drawer: drawer(context),
+      error: error,
+      refresh: fetch,
       body: SafeArea(
-        child: Container(
+        child: ListView(
           padding: EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Material(
-                child: TextField(
-                  controller: _nameController,
-                  autofocus: true,
-                  decoration: InputDecoration(
-                    labelText: 'Name',
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.all(8.0),
-                  ),
+          children: [
+            MaterialInput(
+              autofocus: true,
+              label: 'Name',
+              controller: _nameController,
+            ),
+            SizedBox(height: 8.0),
+            MaterialInput(
+              minLines: 3,
+              maxLines: 10,
+              label: 'Description',
+              controller: _descriptionController,
+            ),
+            SizedBox(height: 8.0),
+            ProjectDropdownWidget(task?.projectId,
+                (int value) => setState(() => task.projectId = value)),
+            SizedBox(height: 8.0),
+            CategoryDropdownWidget(task?.categoryId,
+                (int value) => setState(() => task.categoryId = value)),
+            SizedBox(height: 8.0),
+            PriorityDropdownWidget(task?.priority,
+                (int value) => setState(() => task.priority = value)),
+            SizedBox(height: 8.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Expanded(
+                  child: DatePicker(
+                      task?.startDate,
+                      (value) => setState(() => task.startDate = value),
+                      "Start Date"),
                 ),
-              ),
-              SizedBox(height: 8.0),
-              Material(
-                child: TextField(
-                  controller: _descriptionController,
-                  minLines: 3,
-                  maxLines: 10,
-                  decoration: InputDecoration(
-                    labelText: 'Description',
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.all(8.0),
-                  ),
+                Expanded(
+                  child: DatePicker(
+                      task?.endDate,
+                      (value) => setState(() => task.endDate = value),
+                      "End Date"),
                 ),
-              ),
-              ProjectDropdownWidget(task?.projectId,
-                  (int value) => setState(() => task.projectId = value)),
-              CategoryDropdownWidget(task?.categoryId,
-                  (int value) => setState(() => task.categoryId = value)),
-              PriorityDropdownWidget(task?.priority,
-                  (int value) => setState(() => task.priority = value)),
-              DatePicker(
-                  task?.startDate,
-                  (value) => setState(() => task.startDate = value),
-                  "Start Date"),
-              DatePicker(task?.endDate,
-                  (value) => setState(() => task.endDate = value), "End Date"),
-              SizedBox(height: 8.0),
-              AttachedFilesWidget(task?.attachedFiles, onFilesChange),
-              Error(error),
-              Row(
-                children: <Widget>[
-                  MaterialButton(child: Text('Save'), onPressed: onSave),
-                  MaterialButton(
-                    child: Text('Cancel'),
-                    onPressed: () => Navigator.pop(context),
-                  )
-                ],
-              ),
-            ],
-          ),
+              ],
+            ),
+            SizedBox(height: 8.0),
+            AttachedFilesWidget(task?.attachedFiles, onFilesChange),
+            Row(
+              children: <Widget>[
+                PrimaryButton(text: 'Save', onPressed: onSave),
+                SizedBox(width: 8),
+                DefaultButton(
+                  text: 'Cancel',
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

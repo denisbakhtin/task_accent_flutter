@@ -55,30 +55,75 @@ class _AttachedFilesWidgetState extends State<AttachedFilesWidget> {
     }
   }
 
-  List<Widget> buildItems() {
-    var items = widget.files
-        .map(
-          (file) => MaterialButton(
-              child: Text(file.name),
-              onPressed: () => _viewFile(baseURL + file.url)),
-        )
-        .toList();
-    if (widget.onFilesChange != null)
-      items.add(MaterialButton(
-          child: Text('Add file'), onPressed: _openFileExplorer));
+  List<Widget> buildItems(BuildContext context) {
+    ThemeData theme = Theme.of(context);
+    var items = List<Widget>();
+    var readOnly = widget.onFilesChange == null;
+    if (readOnly) {
+      if (widget.files.length > 0)
+        items.add(Padding(
+            padding: EdgeInsets.only(right: 4),
+            child: Icon(
+              Icons.attach_file,
+              color: theme.primaryColorDark,
+              size: 13,
+            )));
+      items.addAll(widget.files
+          .map(
+            (file) => Padding(
+              padding: EdgeInsets.only(right: 8),
+              child: InkWell(
+                  child: Text(file.name,
+                      style: theme.textTheme.caption
+                          .copyWith(color: theme.primaryColor)),
+                  onTap: () => _viewFile(baseURL + file.url)),
+            ),
+          )
+          .toList());
+    } else {
+      items.addAll(widget.files
+          .map(
+            (file) => Padding(
+              padding: EdgeInsets.only(right: 8),
+              child: Dismissible(
+                key: Key(file.id.toString()),
+                onDismissed: (direction) => setState(() {
+                  widget.files.remove(file);
+                  widget.onFilesChange(widget.files);
+                }),
+                background: Container(color: Color(0x77FF0000)),
+                child: MaterialButton(
+                    child: Text(file.name),
+                    color: theme.buttonColor,
+                    onPressed: () => _viewFile(baseURL + file.url)),
+              ),
+            ),
+          )
+          .toList());
+      items.add(
+        Padding(
+            padding: EdgeInsets.only(right: 8),
+            child: MaterialButton(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [Icon(Icons.attach_file), Text('Add')],
+                ),
+                color: theme.buttonColor,
+                onPressed: _openFileExplorer)),
+      );
+    }
+
     return items;
   }
 
   @override
   Widget build(BuildContext context) {
-    ThemeData theme = Theme.of(context);
-
     return widget.files != null
         ? Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Wrap(
-                children: buildItems(),
+                children: buildItems(context),
               ),
               Error(error),
             ],

@@ -29,7 +29,7 @@ class _SessionPreviewWidgetState extends State<SessionPreviewWidget> {
     ThemeData theme = Theme.of(context);
 
     var _menu = PopupMenuButton(
-      icon: Icon(Icons.menu),
+      icon: Icon(Icons.more_vert),
       elevation: 16,
       onSelected: (value) {
         switch (value) {
@@ -50,13 +50,22 @@ class _SessionPreviewWidgetState extends State<SessionPreviewWidget> {
       ],
     );
 
-    return ListTile(
-      title: Text("Session #${widget.session.id}"),
-      subtitle: Text(widget.session.contents),
-      trailing: _menu,
-      onTap: () => Navigator.push(
-        context,
-        FadeRoute(builder: (context) => SessionPage(widget.session.id)),
+    return Container(
+      color: theme.canvasColor,
+      child: ListTile(
+        title: Text("Session #${widget.session.id}"),
+        subtitle: (widget.session.contents.length > 0)
+            ? Text(
+                widget.session.contents,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              )
+            : null,
+        trailing: _menu,
+        onTap: () => Navigator.push(
+          context,
+          FadeRoute(builder: (context) => SessionPage(widget.session.id)),
+        ),
       ),
     );
   }

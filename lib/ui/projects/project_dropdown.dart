@@ -49,6 +49,7 @@ class _ProjectDropdownWidgetState extends State<ProjectDropdownWidget> {
         ? DropdownButton<int>(
             isExpanded: true, //prevents overflow
             value: widget.value,
+            hint: Text('Project...'),
             icon: Icon(Icons.arrow_drop_down),
             iconSize: 24,
             elevation: 16,

@@ -48,6 +48,7 @@ class _CategoryDropdownWidgetState extends State<CategoryDropdownWidget> {
         ? DropdownButton<int>(
             isExpanded: true, //prevents overflow
             value: widget.value,
+            hint: Text('Category...'),
             icon: Icon(Icons.arrow_drop_down),
             iconSize: 24,
             elevation: 16,

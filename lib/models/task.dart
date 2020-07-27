@@ -71,6 +71,9 @@ class Task {
   @override
   int get hashCode => id.hashCode;
 
+  bool get isExpired =>
+      completed == false && endDate != null && endDate.isBefore(DateTime.now());
+
   factory Task.fromJson(Map<String, dynamic> json) => _$TaskFromJson(json);
   Map<String, dynamic> toJson() => _$TaskToJson(this);
 }

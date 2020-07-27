@@ -19,24 +19,27 @@ class DatePicker extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) => InkWell(
-        onTap: () => _selectDate(context),
-        child: InputDecorator(
-          decoration: InputDecoration(
-              labelText: labelText,
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.all(8.0)),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Text(initialDate != null
-                  ? DateFormat.yMMMd().format(initialDate)
-                  : ''),
-              Icon(Icons.arrow_drop_down,
-                  color: Theme.of(context).primaryColorLight),
-            ],
-          ),
+  Widget build(BuildContext context) {
+    var theme = Theme.of(context);
+    return InkWell(
+      onTap: () => _selectDate(context),
+      child: InputDecorator(
+        decoration: InputDecoration(
+            labelText: labelText,
+            border: InputBorder.none,
+            contentPadding: EdgeInsets.all(8.0)),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisSize: MainAxisSize.min,
+          //crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(initialDate != null
+                ? DateFormat.yMMMd().format(initialDate)
+                : ''),
+            Icon(Icons.arrow_drop_down, color: theme.textTheme.caption.color),
+          ],
         ),
-      );
+      ),
+    );
+  }
 }

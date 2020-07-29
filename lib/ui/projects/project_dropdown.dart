@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:task_accent/ui/helpers/helpers.dart';
 import '../../models/models.dart';
 import '../../services/services.dart';
-import 'dart:async';
 
 class ProjectDropdownWidget extends StatefulWidget {
   final int value;
@@ -16,31 +15,22 @@ class ProjectDropdownWidget extends StatefulWidget {
 
 class _ProjectDropdownWidgetState extends State<ProjectDropdownWidget> {
   ProjectService projectService = ProjectService(GetIt.I<Store>());
-  StreamSubscription projectsSubscription;
   List<Project> projects = [];
 
   @override
   void initState() {
     super.initState();
 
-    projectsSubscription = projectService.listenList((list) {
-      setState(() => projects = list ?? []);
-    });
     fetch();
   }
 
   fetch() async {
     try {
-      await projectService.getList();
+      var _projects = await projectService.getList();
+      setState(() => projects = _projects ?? []);
     } catch (e) {
       showSnackbar(context, e.toString());
     }
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    projectsSubscription.cancel();
   }
 
   @override

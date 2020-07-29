@@ -12,7 +12,6 @@ class SessionsPage extends StatefulWidget {
 }
 
 class _SessionsPageState extends State<SessionsPage> {
-  StreamSubscription sessionsSubscription;
   List<Session> sessions = [];
   SessionService sessionService = SessionService(GetIt.I<Store>());
 
@@ -20,32 +19,16 @@ class _SessionsPageState extends State<SessionsPage> {
   void initState() {
     super.initState();
 
-    sessionsSubscription = sessionService.listenList((list) {
-      setState(() => sessions = list ?? []);
-    });
     fetch();
   }
 
   fetch() async {
     try {
-      await sessionService.getList();
+      var _sessions = await sessionService.getList();
+      setState(() => sessions = _sessions ?? []);
     } catch (e) {
       showSnackbar(context, e.toString());
     }
-  }
-
-  void onUpdate() async {
-    try {
-      await sessionService.getList();
-    } catch (e) {
-      showSnackbar(context, e.toString());
-    }
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    sessionsSubscription.cancel();
   }
 
   @override
@@ -57,7 +40,7 @@ class _SessionsPageState extends State<SessionsPage> {
       floatingActionButton: FloatingActionButton(
           child: Icon(Icons.add),
           onPressed: () => Navigator.push(context,
-              FadeRoute(builder: (context) => EditSessionPage(onUpdate)))),
+              FadeRoute(builder: (context) => EditSessionPage(fetch)))),
       body: SafeArea(
         child: RefreshIndicator(
           child: ListView.separated(
@@ -66,7 +49,7 @@ class _SessionsPageState extends State<SessionsPage> {
             separatorBuilder: (context, index) => ListDivider(),
             itemCount: sessions?.length ?? 0,
             itemBuilder: (context, index) =>
-                SessionPreviewWidget(sessions[index], onUpdate),
+                SessionPreviewWidget(sessions[index], fetch),
           ),
           onRefresh: () => fetch(),
         ),

@@ -31,6 +31,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    var t = List<int>()..add(1)..add(2);
     return AccentScaffold(
       appBar: appBar('Task Accent'),
       drawer: drawer(context),
@@ -43,7 +44,7 @@ class _HomePageState extends State<HomePage> {
               shrinkWrap: true,
               children: <Widget>[
                 SizedBox(height: 16.0),
-                Text('Welcome to Task Accent.'),
+                Text('Welcome to Task Accent. ${t is List}, ${t.runtimeType}'),
                 SizedBox(height: 8.0),
                 Row(
                   children: <Widget>[

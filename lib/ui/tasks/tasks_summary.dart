@@ -12,22 +12,19 @@ class TasksSummaryWidget extends StatefulWidget {
 }
 
 class TasksSummaryWidgetState extends State<TasksSummaryWidget> {
-  TaskService taskService;
+  TaskService taskService = TaskService(GetIt.I<Store>());
   TasksSummary summary = TasksSummary(count: 0);
 
   @override
   void initState() {
     super.initState();
 
-    taskService = TaskService(GetIt.I<Store>());
     fetch();
   }
 
   fetch() async {
-    var sum = await taskService.getSummary();
-    setState(() {
-      summary = sum;
-    });
+    var _summary = await taskService.getSummary();
+    setState(() => summary = _summary);
   }
 
   @override

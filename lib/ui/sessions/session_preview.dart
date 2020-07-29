@@ -15,14 +15,7 @@ class SessionPreviewWidget extends StatefulWidget {
 }
 
 class _SessionPreviewWidgetState extends State<SessionPreviewWidget> {
-  SessionService sessionService;
-
-  @override
-  void initState() {
-    super.initState();
-
-    sessionService = SessionService(GetIt.I<Store>());
-  }
+  SessionService sessionService = SessionService(GetIt.I<Store>());
 
   @override
   Widget build(BuildContext context) {

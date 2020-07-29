@@ -1,30 +1,34 @@
 import 'dart:async';
 import '../models/models.dart';
-import 'service_controller.dart';
 import 'store.dart';
-import 'package:meta/meta.dart';
+import 'http.dart';
 
-class CommentService extends ServiceController<Comment> {
+class CommentService {
   final Store store;
-  CommentService(this.store) : super(store);
+  CommentService(this.store);
 
-  Future<List<Comment>> getList({String url}) async {
-    return await super.getList(url: '/api/comments');
+  Future<List<Comment>> getList() async {
+    var request = Request<Comment>(store);
+    return await request.getList('/api/comments');
   }
 
-  Future<Comment> get({@required int id, String url}) async {
-    return await super.get(id: id, url: '/api/comments/$id');
+  Future<Comment> get(int id) async {
+    var request = Request<Comment>(store);
+    return await request.get('/api/comments/$id');
   }
 
-  Future<Comment> create(Comment comment, {String url}) async {
-    return await super.create(comment, url: "/api/comments");
+  Future<Comment> create(Comment comment) async {
+    var request = Request<Comment>(store);
+    return await request.post('/api/comments', comment);
   }
 
-  Future<Comment> update(Comment comment, {String url}) async {
-    return await super.update(comment, url: "/api/comments/${comment.id}");
+  Future<Comment> update(Comment comment) async {
+    var request = Request<Comment>(store);
+    return await request.put("/api/comments/${comment.id}", comment);
   }
 
-  delete(Comment comment, {String url}) async {
-    return await super.delete(comment, url: '/api/comments/${comment.id}');
+  delete(Comment comment) async {
+    var request = Request<Comment>(store);
+    await request.delete("/api/comments/${comment.id}");
   }
 }

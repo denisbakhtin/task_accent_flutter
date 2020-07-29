@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:task_accent/blocs/blocs.dart';
 import '../shared.dart';
 import '../../services/services.dart';
 import '../../models/models.dart';
@@ -17,20 +18,12 @@ class TaskPreviewWidget extends StatefulWidget {
 }
 
 class _TaskPreviewWidgetState extends State<TaskPreviewWidget> {
-  TaskService taskService;
-  ActiveTaskService activeTaskService;
-
-  @override
-  void initState() {
-    super.initState();
-
-    activeTaskService = GetIt.I<ActiveTaskService>();
-    taskService = TaskService(GetIt.I<Store>());
-  }
+  TaskService taskService = TaskService(GetIt.I<Store>());
+  ActiveTaskBloc activeTaskBloc = GetIt.I<ActiveTaskBloc>();
 
   onStart(BuildContext context) async {
     try {
-      await activeTaskService.start(TaskLog.fromTask(widget.task));
+      await activeTaskBloc.start(TaskLog.fromTask(widget.task));
     } on SocketException catch (_) {
       showSnackbar(context, "No internet connection.");
     }

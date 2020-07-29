@@ -15,9 +15,7 @@ class EditCommentPage extends StatefulWidget {
 }
 
 class _EditCommentPageState extends State<EditCommentPage> {
-  CommentService commentService;
-  StreamSubscription commentSubscription;
-  StreamSubscription commentsSubscription;
+  CommentService commentService = CommentService(GetIt.I<Store>());
   Comment comment;
   String error;
   TextEditingController _contentsController = TextEditingController();
@@ -25,23 +23,6 @@ class _EditCommentPageState extends State<EditCommentPage> {
   @override
   void initState() {
     super.initState();
-
-    commentService = CommentService(GetIt.I<Store>());
-
-    commentSubscription = commentService.listen((com) {
-      setState(() {
-        error = null;
-        if (com != null) {
-          comment = com;
-          _contentsController.text = comment.contents;
-          comment.attachedFiles ??= [];
-        }
-      });
-    });
-    commentsSubscription = commentService.listenList((list) {
-      widget.onUpdate();
-      Navigator.pop(context);
-    });
 
     if (widget.id > 0)
       fetch();
@@ -54,7 +35,15 @@ class _EditCommentPageState extends State<EditCommentPage> {
 
   fetch() async {
     try {
-      await commentService.get(id: widget.id);
+      var _comment = await commentService.get(widget.id);
+      setState(() {
+        error = null;
+        if (_comment != null) {
+          comment = _comment;
+          _contentsController.text = comment.contents;
+          comment.attachedFiles ??= [];
+        }
+      });
     } catch (e) {
       setState(() => error = e.toString());
     }
@@ -70,6 +59,8 @@ class _EditCommentPageState extends State<EditCommentPage> {
         await commentService.update(comment);
       else
         await commentService.create(comment);
+      widget.onUpdate();
+      Navigator.pop(context);
     } catch (e) {
       setState(() => error = e.toString());
     }
@@ -78,8 +69,6 @@ class _EditCommentPageState extends State<EditCommentPage> {
   @override
   void dispose() {
     super.dispose();
-    commentSubscription.cancel();
-    commentsSubscription.cancel();
     _contentsController.dispose();
   }
 

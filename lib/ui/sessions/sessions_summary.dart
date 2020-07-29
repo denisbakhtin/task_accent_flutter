@@ -12,22 +12,19 @@ class SessionsSummaryWidget extends StatefulWidget {
 }
 
 class SessionsSummaryWidgetState extends State<SessionsSummaryWidget> {
-  SessionService sessionService;
+  SessionService sessionService = SessionService(GetIt.I<Store>());
   SessionsSummary summary = SessionsSummary(count: 0);
 
   @override
   void initState() {
     super.initState();
 
-    sessionService = SessionService(GetIt.I<Store>());
     fetch();
   }
 
   fetch() async {
-    var sum = await sessionService.getSummary();
-    setState(() {
-      summary = sum;
-    });
+    var _summary = await sessionService.getSummary();
+    setState(() => summary = _summary);
   }
 
   @override

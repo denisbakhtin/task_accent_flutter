@@ -1,81 +1,44 @@
 import 'dart:async';
 import '../models/models.dart';
-import 'service_controller.dart';
 import 'http.dart';
 import 'store.dart';
 
-class UserService extends ServiceController<User> {
+class UserService {
   final Store store;
-  UserService(this.store) : super(store);
+  UserService(this.store);
 
   logout() async {
     await store.logout();
-    add(null);
   }
 
-  loadPersistentUser() async {
+  Future<User> loadPersistentUser() async {
     await store.loadPersistentData();
-    add(store.authenticatedUser);
+    return store.authenticatedUser;
   }
 
   Future<User> login(String email, String password) async {
-    var req = new Request.post("/api/login", {
-      "email": email,
-      "password": password,
-    });
+    var request = Request<AuthorizationToken>(store);
+    var token = await request.post(
+        '/api/login', LoginModel(email: email, password: password));
 
-    var response = await req.executeRequest(store);
-
-    switch (response.statusCode) {
-      case 200:
-        var token = AuthorizationToken.fromJson(response.body);
-        store.token = token.token;
-        return getAuthenticatedUser();
-      default:
-        throw (response.body is Map<String, dynamic>)
-            ? response.body["error"]
-            : response.body;
-    }
+    store.token = token.token;
+    return getAuthenticatedUser();
   }
 
+  //Register via web site atm... not sure why :)
   Future<User> register(String email, String password) async {
-    var req =
-        new Request.post("/register", {"email": email, "password": password});
+    var request = Request<AuthorizationToken>(store);
+    var token = await request.post(
+        '/api/register', LoginModel(email: email, password: password));
 
-    var response = await req.executeRequest(store);
-
-    switch (response.statusCode) {
-      case 200:
-        return getAuthenticatedUser();
-      case 409:
-        throw "User already exists";
-        break;
-      default:
-        throw (response.body is Map<String, dynamic>)
-            ? response.body["error"]
-            : response.body;
-    }
+    store.token = token.token;
+    return getAuthenticatedUser();
   }
 
   Future<User> getAuthenticatedUser() async {
-    var req = new Request.get("/api/account");
-    var response = await req.executeUserRequest(store);
-
-    switch (response.statusCode) {
-      case 200:
-        {
-          var user = new User.fromJson(response.body);
-          store.authenticatedUser = user;
-          add(user);
-
-          return user;
-        }
-        break;
-
-      default:
-        throw (response.body is Map<String, dynamic>)
-            ? response.body["error"]
-            : response.body;
-    }
+    var request = Request<User>(store);
+    var user = await request.get('/api/account');
+    store.authenticatedUser = user;
+    return user;
   }
 }

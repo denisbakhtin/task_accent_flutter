@@ -24,10 +24,8 @@ class ProjectsSummaryWidgetState extends State<ProjectsSummaryWidget> {
   }
 
   fetch() async {
-    var sum = await projectService.getSummary();
-    setState(() {
-      summary = sum;
-    });
+    var _summary = await projectService.getSummary();
+    setState(() => summary = _summary);
   }
 
   @override

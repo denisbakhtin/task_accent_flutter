@@ -11,7 +11,6 @@ class CategoriesPage extends StatefulWidget {
 }
 
 class _CategoriesPageState extends State<CategoriesPage> {
-  StreamSubscription categoriesSubscription;
   List<Category> categories = [];
   Store store = GetIt.I<Store>();
   CategoryService categoryService;
@@ -21,39 +20,59 @@ class _CategoriesPageState extends State<CategoriesPage> {
     super.initState();
 
     categoryService = CategoryService(store);
-    categoriesSubscription = categoryService.listenList((list) {
-      setState(() => categories = list ?? []);
-    });
-
     fetch();
   }
 
   fetch() async {
     try {
-      await categoryService.getList();
+      var _categories = await categoryService.getList();
+      setState(() => categories = _categories);
     } catch (e) {
       showSnackbar(context, e.toString());
     }
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-    categoriesSubscription.cancel();
+  delete(Category category) async {
+    try {
+      categoryService.delete(category);
+      await fetch();
+    } catch (e) {
+      showSnackbar(context, e.toString());
+    }
+  }
+
+  Widget menu(Category category) {
+    return PopupMenuButton(
+      icon: Icon(Icons.more_vert),
+      elevation: 16,
+      onSelected: (value) {
+        if (value == "Edit")
+          Navigator.push(
+            context,
+            FadeRoute(
+                builder: (context) => EditCategoryPage(category.id, fetch)),
+          );
+        if (value == "Delete")
+          showYesNoDialog(context, 'Are you sure?', () => delete(category));
+      },
+      itemBuilder: (context) => [
+        PopupMenuItem(value: 'Edit', child: Text('Edit')),
+        PopupMenuItem(value: 'Delete', child: Text('Delete')),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
+
     return AccentScaffold(
       appBar: appBar('Categories'),
       drawer: drawer(context),
       floatingActionButton: FloatingActionButton(
           child: Icon(Icons.add),
-          onPressed: () => Navigator.push(
-              context,
-              FadeRoute(
-                  builder: (context) => EditCategoryPage(0, categoryService)))),
+          onPressed: () => Navigator.push(context,
+              FadeRoute(builder: (context) => EditCategoryPage(0, fetch)))),
       body: SafeArea(
         child: RefreshIndicator(
           child: ListView.separated(
@@ -69,7 +88,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                trailing: _DropDownMenu(categories[index], categoryService),
+                trailing: menu(categories[index]),
                 onTap: () => Navigator.push(
                   context,
                   FadeRoute(
@@ -81,37 +100,6 @@ class _CategoriesPageState extends State<CategoriesPage> {
           onRefresh: () => fetch(),
         ),
       ),
-    );
-  }
-}
-
-class _DropDownMenu extends StatelessWidget {
-  final Category category;
-  final CategoryService categoryService;
-  _DropDownMenu(this.category, this.categoryService, {Key key})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return PopupMenuButton(
-      icon: Icon(Icons.more_vert),
-      elevation: 16,
-      onSelected: (value) {
-        if (value == "Edit")
-          Navigator.push(
-            context,
-            FadeRoute(
-                builder: (context) =>
-                    EditCategoryPage(category.id, categoryService)),
-          );
-        if (value == "Delete")
-          showYesNoDialog(
-              context, 'Are you sure?', () => categoryService.delete(category));
-      },
-      itemBuilder: (context) => [
-        PopupMenuItem(value: 'Edit', child: Text('Edit')),
-        PopupMenuItem(value: 'Delete', child: Text('Delete')),
-      ],
     );
   }
 }

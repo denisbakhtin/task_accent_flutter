@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import '../shared.dart';
-import 'dart:async';
 import 'package:get_it/get_it.dart';
 import '../../services/services.dart';
 import '../../models/models.dart';
@@ -14,7 +13,6 @@ class TasksPage extends StatefulWidget {
 }
 
 class _TasksPageState extends State<TasksPage> {
-  StreamSubscription tasksSubscription;
   List<Task> tasks = [];
   TaskService taskService = TaskService(GetIt.I<Store>());
   String error;
@@ -23,30 +21,22 @@ class _TasksPageState extends State<TasksPage> {
   void initState() {
     super.initState();
 
-    tasksSubscription = taskService.listenList((list) {
-      setState(() => tasks = list ?? []);
-    });
     fetch();
   }
 
   fetch() async {
     try {
-      error = null;
-      await taskService.getList();
+      var _tasks = await taskService.getList();
+      setState(() {
+        error = null;
+        tasks = _tasks ?? [];
+      });
     } on SocketException catch (_) {
       setState(() => error = "No internet connection");
     } catch (e) {
       setState(() => error = e.toString());
     }
   }
-
-  @override
-  void dispose() {
-    super.dispose();
-    tasksSubscription.cancel();
-  }
-
-  onUpdate() => taskService.getList();
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +49,7 @@ class _TasksPageState extends State<TasksPage> {
             separatorBuilder: (context, index) => ListDivider(),
             itemCount: filteredTasks?.length ?? 0,
             itemBuilder: (context, index) =>
-                TaskPreviewWidget(filteredTasks.elementAt(index), onUpdate),
+                TaskPreviewWidget(filteredTasks.elementAt(index), fetch),
           ),
           onRefresh: () => fetch(),
         );
@@ -91,7 +81,7 @@ class _TasksPageState extends State<TasksPage> {
         floatingActionButton: FloatingActionButton(
             child: Icon(Icons.add),
             onPressed: () => Navigator.push(context,
-                FadeRoute(builder: (context) => EditTaskPage(0, onUpdate)))),
+                FadeRoute(builder: (context) => EditTaskPage(0, fetch)))),
         error: error,
         refresh: fetch,
         body: SafeArea(

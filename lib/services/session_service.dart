@@ -1,50 +1,43 @@
-import 'dart:async';
 import '../models/models.dart';
-import 'service_controller.dart';
 import 'services.dart';
 import 'store.dart';
-import 'package:meta/meta.dart';
 
-class SessionService extends ServiceController<Session> {
+class SessionService {
   final Store store;
-  SessionService(this.store) : super(store);
+  SessionService(this.store);
 
-  Future<List<Session>> getList({String url}) async {
-    return await super.getList(url: '/api/sessions');
+  Future<List<Session>> getList() async {
+    var request = Request<Session>(store);
+    return await request.getList('/api/sessions');
+  }
+
+  Future<Session> get(int id) async {
+    var request = Request<Session>(store);
+    return await request.get('/api/sessions/$id');
   }
 
   Future<Session> getNew() async {
-    return await super.get(url: '/api/new_session');
+    var request = Request<Session>(store);
+    return await request.get('/api/new_session');
   }
 
-  Future<Session> get({@required int id, String url}) async {
-    return await super.get(id: id, url: '/api/sessions/$id');
+  Future<Session> create(Session session) async {
+    var request = Request<Session>(store);
+    return await request.post('/api/sessions', session);
   }
 
-  Future<Session> create(Session session, {String url}) async {
-    return await super.create(session, url: "/api/sessions");
+  Future<Session> update(Session session) async {
+    var request = Request<Session>(store);
+    return await request.put("/api/sessions/${session.id}", session);
   }
 
-  delete(Session session, {String url}) async {
-    return await super.delete(session, url: '/api/sessions/${session.id}');
+  delete(Session session) async {
+    var request = Request<Session>(store);
+    await request.delete("/api/sessions/${session.id}");
   }
 
   Future<SessionsSummary> getSummary() async {
-    var req = new Request.get("/api/sessions_summary");
-    var response = await req.executeUserRequest(store);
-
-    switch (response.statusCode) {
-      case 200:
-        {
-          var summary = new SessionsSummary.fromJson(response.body);
-          return summary;
-        }
-        break;
-
-      default:
-        throw (response.body is Map<String, dynamic>)
-            ? response.body["error"]
-            : response.body;
-    }
+    var request = Request<SessionsSummary>(store);
+    return await request.get('/api/sessions_summary');
   }
 }

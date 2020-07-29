@@ -24,10 +24,8 @@ class CategoriesSummaryWidgetState extends State<CategoriesSummaryWidget> {
   }
 
   fetch() async {
-    var sum = await categoryService.getSummary();
-    setState(() {
-      summary = sum;
-    });
+    var _summary = await categoryService.getSummary();
+    setState(() => summary = _summary);
   }
 
   @override

@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:task_accent/ui/helpers/helpers.dart';
+import 'package:task_accent/blocs/blocs.dart';
 import '../shared.dart';
 import '../../services/services.dart';
 import '../../models/models.dart';
@@ -16,43 +16,33 @@ class TaskPage extends StatefulWidget {
 }
 
 class _TaskPageState extends State<TaskPage> {
-  StreamSubscription taskSubscription;
   Task task;
   Store store = GetIt.I<Store>();
   TaskService taskService;
-  ActiveTaskService activeTaskService;
+  ActiveTaskBloc activeTaskBloc = GetIt.I<ActiveTaskBloc>();
   String error;
 
   @override
   void initState() {
     super.initState();
 
-    activeTaskService = GetIt.I<ActiveTaskService>();
     taskService = TaskService(store);
-    taskSubscription = taskService.listen((proj) {
-      setState(() => task = proj);
-    });
     fetch();
   }
 
   fetch() async {
     try {
-      error = null;
-      await taskService.get(id: widget.id);
+      var _task = await taskService.get(widget.id);
+      setState(() {
+        error = null;
+        task = _task;
+      });
     } on SocketException catch (_) {
       setState(() => error = "No internet connection");
     } catch (e) {
       setState(() => error = e.toString());
     }
   }
-
-  @override
-  void dispose() {
-    super.dispose();
-    taskSubscription.cancel();
-  }
-
-  onUpdate() => taskService.get(id: widget.id);
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +52,7 @@ class _TaskPageState extends State<TaskPage> {
       drawer: drawer(context),
       floatingActionButton: FloatingActionButton(
           child: Icon(Icons.play_arrow),
-          onPressed: () => activeTaskService.start(TaskLog.fromTask((task)))),
+          onPressed: () => activeTaskBloc.start(TaskLog.fromTask((task)))),
       error: error,
       refresh: fetch,
       body: SafeArea(
@@ -88,19 +78,19 @@ class _TaskPageState extends State<TaskPage> {
                         context,
                         FadeRoute(
                             builder: (context) =>
-                                EditCommentPage(0, task.id, onUpdate)),
+                                EditCommentPage(0, task.id, fetch)),
                       ),
                     ),
                   ),
                   SizedBox(height: 8),
                   Container(
-                    color: Color(0x77FFFFFF),
+                    color: theme.canvasColor,
                     child: ListView.separated(
                       shrinkWrap: true,
                       physics: NeverScrollableScrollPhysics(),
                       itemCount: task.comments?.length ?? 0,
                       itemBuilder: (context, index) =>
-                          CommentPreviewWidget(task.comments[index], onUpdate),
+                          CommentPreviewWidget(task.comments[index], fetch),
                       separatorBuilder: (context, index) => ListDivider(),
                     ),
                   ),

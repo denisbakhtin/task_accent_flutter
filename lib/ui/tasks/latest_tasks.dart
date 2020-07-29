@@ -12,22 +12,19 @@ class LatestTasksWidget extends StatefulWidget {
 }
 
 class LatestTasksWidgetState extends State<LatestTasksWidget> {
-  TaskService taskService;
+  TaskService taskService = TaskService(GetIt.I<Store>());
   List<Task> tasks = [];
 
   @override
   void initState() {
     super.initState();
 
-    taskService = TaskService(GetIt.I<Store>());
     fetch();
   }
 
   fetch() async {
-    var latest = await taskService.getLatest();
-    setState(() {
-      tasks = latest;
-    });
+    var _tasks = await taskService.getLatest();
+    setState(() => tasks = _tasks ?? []);
   }
 
   @override

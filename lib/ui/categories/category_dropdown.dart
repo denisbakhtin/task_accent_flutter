@@ -15,31 +15,22 @@ class CategoryDropdownWidget extends StatefulWidget {
 
 class _CategoryDropdownWidgetState extends State<CategoryDropdownWidget> {
   CategoryService categoryService = CategoryService(GetIt.I<Store>());
-  StreamSubscription categoriesSubscription;
   List<Category> categories = [];
 
   @override
   void initState() {
     super.initState();
 
-    categoriesSubscription = categoryService.listenList((list) {
-      setState(() => categories = list ?? []);
-    });
     fetch();
   }
 
   fetch() async {
     try {
-      await categoryService.getList();
+      var _categories = await categoryService.getList();
+      setState(() => categories = _categories ?? []);
     } catch (e) {
       showSnackbar(context, e.toString());
     }
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    categoriesSubscription.cancel();
   }
 
   @override

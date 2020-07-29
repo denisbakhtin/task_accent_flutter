@@ -1,50 +1,39 @@
 import 'dart:async';
 import '../models/models.dart';
-import 'service_controller.dart';
 import 'services.dart';
 import 'store.dart';
-import 'package:meta/meta.dart';
 
-class ProjectService extends ServiceController<Project> {
+class ProjectService {
   final Store store;
-  ProjectService(this.store) : super(store);
+  ProjectService(this.store);
 
-  Future<List<Project>> getList({String url}) async {
-    return await super.getList(url: '/api/projects');
+  Future<List<Project>> getList() async {
+    var request = Request<Project>(store);
+    return await request.getList('/api/projects');
   }
 
-  Future<Project> get({@required int id, String url}) async {
-    return await super.get(id: id, url: '/api/projects/$id');
+  Future<Project> get(int id) async {
+    var request = Request<Project>(store);
+    return await request.get('/api/projects/$id');
   }
 
-  Future<Project> create(Project project, {String url}) async {
-    return await super.create(project, url: "/api/projects");
+  Future<Project> create(Project project) async {
+    var request = Request<Project>(store);
+    return await request.post('/api/projects', project);
   }
 
-  Future<Project> update(Project project, {String url}) async {
-    return await super.update(project, url: "/api/projects/${project.id}");
+  Future<Project> update(Project project) async {
+    var request = Request<Project>(store);
+    return await request.put("/api/projects/${project.id}", project);
   }
 
-  delete(Project project, {String url}) async {
-    return await super.delete(project, url: '/api/projects/${project.id}');
+  delete(Project project) async {
+    var request = Request<Project>(store);
+    await request.delete("/api/projects/${project.id}");
   }
 
   Future<ProjectsSummary> getSummary() async {
-    var req = new Request.get("/api/projects_summary");
-    var response = await req.executeUserRequest(store);
-
-    switch (response.statusCode) {
-      case 200:
-        {
-          var summary = new ProjectsSummary.fromJson(response.body);
-          return summary;
-        }
-        break;
-
-      default:
-        throw (response.body is Map<String, dynamic>)
-            ? response.body["error"]
-            : response.body;
-    }
+    var request = Request<ProjectsSummary>(store);
+    return await request.get('/api/projects_summary');
   }
 }

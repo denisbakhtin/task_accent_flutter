@@ -5,6 +5,7 @@ import 'services/services.dart';
 //import 'package:firebase_messaging/firebase_messaging.dart';
 import 'ui/shared.dart';
 import 'models/models.dart';
+import 'blocs/blocs.dart';
 
 final getIt = GetIt.instance;
 
@@ -13,8 +14,10 @@ void main() async {
   //initFirebase();
   final store = Store();
   getIt.registerSingleton<Store>(store, signalsReady: true);
-  getIt.registerSingleton<UserService>(UserService(store), signalsReady: true);
-  getIt.registerSingleton<ActiveTaskService>(ActiveTaskService(store),
+  getIt.registerSingleton<UserBloc>(UserBloc(UserService(store)),
+      signalsReady: true);
+  getIt.registerSingleton<ActiveTaskBloc>(
+      ActiveTaskBloc(ActiveTaskService(store)),
       signalsReady: true);
 
   runApp(App());
@@ -26,33 +29,24 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-  UserService userService;
-  StreamSubscription userSubscription;
-  User user;
-
-  @override
-  void initState() {
-    super.initState();
-    userService = getIt<UserService>();
-    userService.loadPersistentUser();
-
-    userSubscription = userService.listen((u) {
-      setState(() {
-        user = u;
-      });
-    });
-  }
+  UserBloc userBloc = getIt<UserBloc>();
+  ActiveTaskBloc activeTaskBloc = getIt<ActiveTaskBloc>();
 
   @override
   void dispose() {
     super.dispose();
-    userSubscription.cancel();
+    userBloc.dispose();
+    activeTaskBloc.dispose();
   }
 
   @override
   Widget build(BuildContext context) => MaterialApp(
         title: 'Task Accent',
         theme: taskAccentTheme(context),
-        home: (user != null) ? HomePage() : LoginPage(),
+        home: StreamBuilder<User>(
+          stream: userBloc.user,
+          builder: (context, snapshot) =>
+              (snapshot.data != null) ? HomePage() : LoginPage(),
+        ),
       );
 }

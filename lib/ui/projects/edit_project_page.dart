@@ -13,8 +13,6 @@ class EditProjectPage extends StatefulWidget {
 
 class _EditProjectPageState extends State<EditProjectPage> {
   ProjectService projectService;
-  StreamSubscription projectSubscription;
-  StreamSubscription projectsSubscription;
   Project project;
   String error;
   List<Category> categories = [];
@@ -26,23 +24,6 @@ class _EditProjectPageState extends State<EditProjectPage> {
     super.initState();
 
     projectService = ProjectService(GetIt.I<Store>());
-    projectSubscription = projectService.listen((proj) {
-      setState(() {
-        error = null;
-        if (proj != null) {
-          project = proj;
-          _nameController.text = project.name;
-          _descriptionController.text = project.description;
-          project.attachedFiles ??= [];
-        }
-      });
-    });
-
-    projectsSubscription = projectService.listenList((list) {
-      widget.onUpdate();
-      Navigator.pop(context);
-    });
-
     if (widget.id > 0)
       fetch();
     else
@@ -51,7 +32,16 @@ class _EditProjectPageState extends State<EditProjectPage> {
 
   fetch() async {
     try {
-      await projectService.get(id: widget.id);
+      var _project = await projectService.get(widget.id);
+      setState(() {
+        error = null;
+        if (_project != null) {
+          project = _project;
+          _nameController.text = project.name;
+          _descriptionController.text = project.description;
+          project.attachedFiles ??= [];
+        }
+      });
     } catch (e) {
       setState(() => error = e.toString());
     }
@@ -60,8 +50,6 @@ class _EditProjectPageState extends State<EditProjectPage> {
   @override
   void dispose() {
     super.dispose();
-    projectSubscription.cancel();
-    projectsSubscription.cancel();
     _nameController.dispose();
     _descriptionController.dispose();
   }
@@ -69,7 +57,7 @@ class _EditProjectPageState extends State<EditProjectPage> {
   onFilesChange(List<AttachedFile> files) =>
       setState(() => project?.attachedFiles = files);
 
-  void onSave() async {
+  onSave() async {
     project.name = _nameController.text;
     project.description = _descriptionController.text;
     try {
@@ -77,6 +65,8 @@ class _EditProjectPageState extends State<EditProjectPage> {
         await projectService.update(project);
       else
         await projectService.create(project);
+      widget.onUpdate();
+      Navigator.pop(context);
     } catch (e) {
       setState(() => error = e.toString());
     }

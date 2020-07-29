@@ -14,38 +14,25 @@ class CategoryPage extends StatefulWidget {
 }
 
 class _CategoryPageState extends State<CategoryPage> {
-  StreamSubscription categorySubscription;
   Category category;
   Store store = GetIt.I<Store>();
   CategoryService categoryService;
-  ProjectService projectService;
-  TaskService taskService;
 
   @override
   void initState() {
     super.initState();
 
     categoryService = CategoryService(store);
-    projectService = ProjectService(store);
-    taskService = TaskService(store);
-    categorySubscription = categoryService.listen((cat) {
-      setState(() => category = cat);
-    });
     fetch();
   }
 
   fetch() async {
     try {
-      await categoryService.get(id: widget.id);
+      var _category = await categoryService.get(widget.id);
+      setState(() => category = _category);
     } catch (e) {
       showSnackbar(context, e.toString());
     }
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    categorySubscription.cancel();
   }
 
   @override

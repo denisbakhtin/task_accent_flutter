@@ -12,7 +12,6 @@ class ProjectsPage extends StatefulWidget {
 }
 
 class _ProjectsPageState extends State<ProjectsPage> {
-  StreamSubscription projectsSubscription;
   List<Project> projects = [];
   ProjectService projectService = ProjectService(GetIt.I<Store>());
 
@@ -20,24 +19,16 @@ class _ProjectsPageState extends State<ProjectsPage> {
   void initState() {
     super.initState();
 
-    projectsSubscription = projectService.listenList((list) {
-      setState(() => projects = list ?? []);
-    });
     fetch();
   }
 
   fetch() async {
     try {
-      await projectService.getList();
+      var _projects = await projectService.getList();
+      setState(() => projects = _projects ?? []);
     } catch (e) {
       showSnackbar(context, e.toString());
     }
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    projectsSubscription.cancel();
   }
 
   @override

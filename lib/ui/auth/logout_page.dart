@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:task_accent/blocs/blocs.dart';
 import '../shared.dart';
 import '../../services/services.dart';
 
 class LogoutPage extends StatelessWidget {
-  final userService = GetIt.I<UserService>();
+  final userBloc = GetIt.I<UserBloc>();
 
   void onLogoutPressed(BuildContext context) async {
-    await userService.logout();
+    await userBloc.logout();
     Navigator.of(context).popUntil((route) => route.isFirst);
   }
 

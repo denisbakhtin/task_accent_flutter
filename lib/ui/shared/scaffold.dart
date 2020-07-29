@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:task_accent/blocs/blocs.dart';
 import '../../services/services.dart';
 import '../../models/models.dart';
 import '../shared.dart';
@@ -25,34 +26,14 @@ class AccentScaffold extends StatefulWidget {
 }
 
 class _AccentScaffoldState extends State<AccentScaffold> {
-  ActiveTaskService activeTaskService;
-  StreamSubscription atSubscription;
+  ActiveTaskBloc activeTaskBloc = GetIt.I<ActiveTaskBloc>();
   TaskLog taskLog;
-
-  @override
-  void initState() {
-    super.initState();
-    activeTaskService = GetIt.I<ActiveTaskService>();
-    taskLog = activeTaskService.activeTaskLog;
-
-    atSubscription = activeTaskService.listen((tl) {
-      setState(() {
-        taskLog = tl;
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    atSubscription.cancel();
-  }
 
   List<Widget> buildChildren() {
     return (widget.error == null)
         ? [
             widget.body,
-            ActiveTaskWidget(taskLog, activeTaskService),
+            ActiveTaskWidget(activeTaskBloc),
           ]
         : [
             Column(children: [

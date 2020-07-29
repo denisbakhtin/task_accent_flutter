@@ -14,7 +14,6 @@ class ProjectPage extends StatefulWidget {
 }
 
 class _ProjectPageState extends State<ProjectPage> {
-  StreamSubscription projectSubscription;
   Project project;
   ProjectService projectService = ProjectService(GetIt.I<Store>());
 
@@ -22,29 +21,13 @@ class _ProjectPageState extends State<ProjectPage> {
   void initState() {
     super.initState();
 
-    projectSubscription = projectService.listen((proj) {
-      setState(() => project = proj);
-    });
     fetch();
   }
 
   fetch() async {
     try {
-      await projectService.get(id: widget.id);
-    } catch (e) {
-      showSnackbar(context, e.toString());
-    }
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    projectSubscription.cancel();
-  }
-
-  onUpdate() async {
-    try {
-      await projectService.get(id: widget.id);
+      var _project = await projectService.get(widget.id);
+      setState(() => project = _project);
     } catch (e) {
       showSnackbar(context, e.toString());
     }
@@ -62,7 +45,7 @@ class _ProjectPageState extends State<ProjectPage> {
               context,
               FadeRoute(
                   builder: (context) =>
-                      EditTaskPage(0, onUpdate, projectId: project.id)))),
+                      EditTaskPage(0, fetch, projectId: project.id)))),
       body: SafeArea(
         child: project != null
             ? RefreshIndicator(
@@ -82,13 +65,13 @@ class _ProjectPageState extends State<ProjectPage> {
                     Text('Tasks', style: theme.textTheme.subtitle1),
                     SizedBox(height: 8.0),
                     Container(
-                      color: Color(0x77FFFFFF),
+                      color: theme.canvasColor,
                       child: ListView.separated(
                         shrinkWrap: true,
                         physics: NeverScrollableScrollPhysics(),
                         itemCount: project.tasks?.length ?? 0,
                         itemBuilder: (context, index) =>
-                            TaskPreviewWidget(project.tasks[index], onUpdate),
+                            TaskPreviewWidget(project.tasks[index], fetch),
                         separatorBuilder: (context, index) => ListDivider(),
                       ),
                     ),

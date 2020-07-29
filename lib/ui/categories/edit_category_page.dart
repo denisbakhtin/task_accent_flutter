@@ -5,15 +5,15 @@ import '../../models/models.dart';
 
 class EditCategoryPage extends StatefulWidget {
   final int id;
-  final CategoryService categoryService;
-  EditCategoryPage(this.id, this.categoryService);
+  final Function onUpdate;
+  EditCategoryPage(this.id, this.onUpdate);
   @override
   _EditCategoryPageState createState() => _EditCategoryPageState();
 }
 
 class _EditCategoryPageState extends State<EditCategoryPage> {
-  StreamSubscription categorySubscription;
-  StreamSubscription categoriesSubscription;
+  Store store = GetIt.I<Store>();
+  CategoryService categoryService;
   Category category;
   String error;
   TextEditingController _nameController = TextEditingController();
@@ -22,19 +22,7 @@ class _EditCategoryPageState extends State<EditCategoryPage> {
   void initState() {
     super.initState();
 
-    categorySubscription = widget.categoryService.listen((cat) {
-      setState(() {
-        error = null;
-        if (cat != null) {
-          category = cat;
-          _nameController.text = category.name;
-        }
-      });
-    });
-    categoriesSubscription = widget.categoryService.listenList((list) {
-      Navigator.pop(context);
-    });
-
+    categoryService = CategoryService(store);
     if (widget.id > 0)
       fetch();
     else
@@ -43,7 +31,12 @@ class _EditCategoryPageState extends State<EditCategoryPage> {
 
   fetch() async {
     try {
-      await widget.categoryService.get(id: widget.id);
+      var _category = await categoryService.get(widget.id);
+      setState(() {
+        error = null;
+        category = _category;
+        _nameController.text = category.name;
+      });
     } catch (e) {
       setState(() => error = e.toString());
     }
@@ -53,9 +46,12 @@ class _EditCategoryPageState extends State<EditCategoryPage> {
     category.name = _nameController.text;
     try {
       if (widget.id > 0)
-        await widget.categoryService.update(category);
+        await categoryService.update(category);
       else
-        await widget.categoryService.create(category);
+        await categoryService.create(category);
+
+      if (widget.onUpdate != null) widget.onUpdate();
+      Navigator.pop(context);
     } catch (e) {
       setState(() => error = e.toString());
     }
@@ -64,8 +60,6 @@ class _EditCategoryPageState extends State<EditCategoryPage> {
   @override
   void dispose() {
     super.dispose();
-    categorySubscription.cancel();
-    categoriesSubscription.cancel();
     _nameController.dispose();
   }
 

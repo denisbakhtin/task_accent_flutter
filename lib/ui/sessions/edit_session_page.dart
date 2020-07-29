@@ -12,9 +12,7 @@ class EditSessionPage extends StatefulWidget {
 }
 
 class _EditSessionPageState extends State<EditSessionPage> {
-  SessionService sessionService;
-  StreamSubscription sessionSubscription;
-  StreamSubscription sessionsSubscription;
+  SessionService sessionService = SessionService(GetIt.I<Store>());
   Session session = Session(taskLogs: []);
   List<Project> projects;
   String error;
@@ -25,30 +23,25 @@ class _EditSessionPageState extends State<EditSessionPage> {
   void initState() {
     super.initState();
 
-    sessionService = SessionService(GetIt.I<Store>());
-    sessionSubscription = sessionService.listen((t) {
-      setState(() {
-        error = null;
-        if (t != null) {
-          projects = groupLogsByProject(t.taskLogs);
-        }
-      });
-    });
-    //service's create and update methods, write into List streams
-    sessionsSubscription = sessionService.listenList((list) {
-      widget.onUpdate(); //fire callback to refresh list
-      Navigator.pop(context);
-    });
-
-    sessionService.getNew();
+    fetch();
   }
 
   @override
   void dispose() {
     super.dispose();
-    sessionSubscription.cancel();
-    sessionsSubscription.cancel();
     _contentsController.dispose();
+  }
+
+  fetch() async {
+    try {
+      var _session = await sessionService.getNew();
+      setState(() {
+        error = null;
+        if (_session != null) projects = groupLogsByProject(_session.taskLogs);
+      });
+    } catch (e) {
+      setState(() => error = e.toString());
+    }
   }
 
   void onSave() async {
@@ -56,6 +49,8 @@ class _EditSessionPageState extends State<EditSessionPage> {
     try {
       session.taskLogs.forEach((log) => log.task = null);
       await sessionService.create(session);
+      widget.onUpdate(); //fire callback to refresh list
+      Navigator.pop(context);
     } catch (e) {
       setState(() => error = e.toString());
     }

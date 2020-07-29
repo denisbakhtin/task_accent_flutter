@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:task_accent/blocs/blocs.dart';
 import '../helpers/helpers.dart';
 import 'dart:math';
 import 'package:flutter/cupertino.dart';
@@ -14,8 +15,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  UserService _userService = GetIt.I<UserService>();
-  //GlobalBloc _globalBloc;
+  UserBloc _userBloc = GetIt.I<UserBloc>();
   TextEditingController _emailController;
   TextEditingController _passwordController;
   bool obscurePassword;
@@ -28,6 +28,7 @@ class _LoginPageState extends State<LoginPage> {
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
     obscurePassword = true;
+    //TODO: remove in prod xD
     seedControllers();
   }
 
@@ -51,7 +52,7 @@ class _LoginPageState extends State<LoginPage> {
 
   void onSubmit(BuildContext context) async {
     try {
-      await _userService.login(_emailController.text, _passwordController.text);
+      await _userBloc.login(_emailController.text, _passwordController.text);
     } catch (e) {
       setState(() => error = e.toString());
     }

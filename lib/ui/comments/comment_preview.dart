@@ -16,14 +16,7 @@ class CommentPreviewWidget extends StatefulWidget {
 }
 
 class _CommentPreviewWidgetState extends State<CommentPreviewWidget> {
-  CommentService commentService;
-
-  @override
-  void initState() {
-    super.initState();
-
-    commentService = CommentService(GetIt.I<Store>());
-  }
+  CommentService commentService = CommentService(GetIt.I<Store>());
 
   @override
   Widget build(BuildContext context) {

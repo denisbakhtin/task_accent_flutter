@@ -11,7 +11,6 @@ class SpentPage extends StatefulWidget {
 }
 
 class _SpentPageState extends State<SpentPage> {
-  StreamSubscription sessionsSubscription;
   List<TaskLog> logs = [];
   List<Project> projects = [];
   ReportService reportService = ReportService(GetIt.I<Store>());
@@ -20,27 +19,19 @@ class _SpentPageState extends State<SpentPage> {
   void initState() {
     super.initState();
 
-    sessionsSubscription = reportService.listenList((list) {
-      setState(() {
-        logs = list ?? [];
-        projects = groupLogsByProject(logs);
-      });
-    });
     fetch();
   }
 
   fetch() async {
     try {
-      await reportService.getSpent();
+      var _logs = await reportService.getSpent();
+      setState(() {
+        logs = _logs ?? [];
+        projects = groupLogsByProject(logs);
+      });
     } catch (e) {
       showSnackbar(context, e.toString());
     }
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    sessionsSubscription.cancel();
   }
 
   @override

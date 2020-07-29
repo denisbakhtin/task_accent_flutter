@@ -16,9 +16,7 @@ class EditTaskPage extends StatefulWidget {
 }
 
 class _EditTaskPageState extends State<EditTaskPage> {
-  TaskService taskService;
-  StreamSubscription taskSubscription;
-  StreamSubscription tasksSubscription;
+  TaskService taskService = TaskService(GetIt.I<Store>());
   Task task;
   String error;
   TextEditingController _nameController = TextEditingController();
@@ -27,24 +25,6 @@ class _EditTaskPageState extends State<EditTaskPage> {
   @override
   void initState() {
     super.initState();
-
-    taskService = TaskService(GetIt.I<Store>());
-    taskSubscription = taskService.listen((t) {
-      setState(() {
-        error = null;
-        if (t != null) {
-          task = t;
-          _nameController.text = task.name;
-          _descriptionController.text = task.description;
-          task.attachedFiles ??= [];
-        }
-      });
-    });
-    //service's create and update methods, write into List streams
-    tasksSubscription = taskService.listenList((list) {
-      widget.onUpdate(); //fire callback to refresh list
-      Navigator.pop(context);
-    });
 
     if (widget.id > 0)
       fetch();
@@ -55,8 +35,16 @@ class _EditTaskPageState extends State<EditTaskPage> {
 
   fetch() async {
     try {
-      error = null;
-      await taskService.get(id: widget.id);
+      var _task = await taskService.get(widget.id);
+      setState(() {
+        error = null;
+        if (_task != null) {
+          task = _task;
+          _nameController.text = task.name;
+          _descriptionController.text = task.description;
+          task.attachedFiles ??= [];
+        }
+      });
     } on SocketException catch (_) {
       setState(() => error = "No internet connection");
     } catch (e) {
@@ -67,8 +55,6 @@ class _EditTaskPageState extends State<EditTaskPage> {
   @override
   void dispose() {
     super.dispose();
-    taskSubscription.cancel();
-    tasksSubscription.cancel();
     _nameController.dispose();
     _descriptionController.dispose();
   }
@@ -84,6 +70,8 @@ class _EditTaskPageState extends State<EditTaskPage> {
         await taskService.update(task);
       else
         await taskService.create(task);
+      widget.onUpdate(); //fire callback to refresh list
+      Navigator.pop(context);
     } on SocketException catch (_) {
       setState(() => error = "No internet connection");
     } catch (e) {

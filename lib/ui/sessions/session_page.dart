@@ -12,7 +12,6 @@ class SessionPage extends StatefulWidget {
 }
 
 class _SessionPageState extends State<SessionPage> {
-  StreamSubscription sessionSubscription;
   Session session;
   List<TaskLog> logs = [];
   List<Project> projects = [];
@@ -22,30 +21,22 @@ class _SessionPageState extends State<SessionPage> {
   void initState() {
     super.initState();
 
-    sessionSubscription = sessionService.listen((s) {
-      setState(() {
-        if (s != null) {
-          session = s;
-          logs = session.taskLogs;
-          projects = groupLogsByProject(logs);
-        }
-      });
-    });
     fetch();
   }
 
   fetch() async {
     try {
-      await sessionService.get(id: widget.id);
+      var _session = await sessionService.get(widget.id);
+      setState(() {
+        if (_session != null) {
+          session = _session;
+          logs = session.taskLogs;
+          projects = groupLogsByProject(logs);
+        }
+      });
     } catch (e) {
       showSnackbar(context, e.toString());
     }
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    sessionSubscription.cancel();
   }
 
   @override

@@ -1,50 +1,39 @@
 import 'dart:async';
 import '../models/models.dart';
-import 'service_controller.dart';
 import 'services.dart';
 import 'store.dart';
-import 'package:meta/meta.dart';
 
-class CategoryService extends ServiceController<Category> {
+class CategoryService {
   final Store store;
-  CategoryService(this.store) : super(store);
+  CategoryService(this.store);
 
-  Future<List<Category>> getList({String url}) async {
-    return await super.getList(url: '/api/categories');
+  Future<List<Category>> getList() async {
+    var request = Request<Category>(store);
+    return await request.getList('/api/categories');
   }
 
-  Future<Category> get({@required int id, String url}) async {
-    return await super.get(id: id, url: '/api/categories/$id');
+  Future<Category> get(int id) async {
+    var request = Request<Category>(store);
+    return await request.get('/api/categories/$id');
   }
 
-  Future<Category> create(Category category, {String url}) async {
-    return await super.create(category, url: "/api/categories");
+  Future<Category> create(Category category) async {
+    var request = Request<Category>(store);
+    return await request.post('/api/categories', category);
   }
 
-  Future<Category> update(Category category, {String url}) async {
-    return await super.update(category, url: "/api/categories/${category.id}");
+  Future<Category> update(Category category) async {
+    var request = Request<Category>(store);
+    return await request.put("/api/categories/${category.id}", category);
   }
 
-  delete(Category category, {String url}) async {
-    return await super.delete(category, url: '/api/categories/${category.id}');
+  delete(Category category) async {
+    var request = Request<Category>(store);
+    await request.delete("/api/categories/${category.id}");
   }
 
   Future<CategoriesSummary> getSummary() async {
-    var req = new Request.get("/api/categories_summary");
-    var response = await req.executeUserRequest(store);
-
-    switch (response.statusCode) {
-      case 200:
-        {
-          var summary = new CategoriesSummary.fromJson(response.body);
-          return summary;
-        }
-        break;
-
-      default:
-        throw (response.body is Map<String, dynamic>)
-            ? response.body["error"]
-            : response.body;
-    }
+    var request = Request<CategoriesSummary>(store);
+    return await request.get('/api/categories_summary');
   }
 }

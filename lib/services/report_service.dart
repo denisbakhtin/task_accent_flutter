@@ -1,13 +1,13 @@
-import 'dart:async';
 import '../models/models.dart';
-import 'service_controller.dart';
+import 'services.dart';
 import 'store.dart';
 
-class ReportService extends ServiceController<TaskLog> {
+class ReportService {
   final Store store;
-  ReportService(this.store) : super(store);
+  ReportService(this.store);
 
-  Future<List<TaskLog>> getSpent({String url}) async {
-    return await super.getList(url: '/api/reports/spent');
+  Future<List<TaskLog>> getSpent() async {
+    var request = Request<TaskLog>(store);
+    return await request.getList('/api/reports/spent');
   }
 }

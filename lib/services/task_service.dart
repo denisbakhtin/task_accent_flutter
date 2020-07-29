@@ -1,71 +1,44 @@
 import 'dart:async';
 import '../models/models.dart';
-import 'service_controller.dart';
 import 'services.dart';
 import 'store.dart';
-import 'package:meta/meta.dart';
 
-class TaskService extends ServiceController<Task> {
+class TaskService {
   final Store store;
-  TaskService(this.store) : super(store);
+  TaskService(this.store);
 
-  Future<List<Task>> getList({String url}) async {
-    return await super.getList(url: '/api/tasks');
+  Future<List<Task>> getList() async {
+    var request = Request<Task>(store);
+    return await request.getList('/api/tasks');
   }
 
-  Future<Task> get({@required int id, String url}) async {
-    return await super.get(id: id, url: '/api/tasks/$id');
+  Future<Task> get(int id) async {
+    var request = Request<Task>(store);
+    return await request.get('/api/tasks/$id');
   }
 
-  Future<Task> create(Task task, {String url}) async {
-    return await super.create(task, url: "/api/tasks");
+  Future<Task> create(Task task) async {
+    var request = Request<Task>(store);
+    return await request.post('/api/tasks', task);
   }
 
-  Future<Task> update(Task task, {String url}) async {
-    return await super.update(task, url: "/api/tasks/${task.id}");
+  Future<Task> update(Task task) async {
+    var request = Request<Task>(store);
+    return await request.put("/api/tasks/${task.id}", task);
   }
 
-  delete(Task task, {String url}) async {
-    return await super.delete(task, url: '/api/tasks/${task.id}');
+  delete(Task task) async {
+    var request = Request<Task>(store);
+    await request.delete("/api/tasks/${task.id}");
   }
 
   Future<TasksSummary> getSummary() async {
-    var req = new Request.get("/api/tasks_summary");
-    var response = await req.executeUserRequest(store);
-
-    switch (response.statusCode) {
-      case 200:
-        {
-          var summary = new TasksSummary.fromJson(response.body);
-          return summary;
-        }
-        break;
-
-      default:
-        throw (response.body is Map<String, dynamic>)
-            ? response.body["error"]
-            : response.body;
-    }
+    var request = Request<TasksSummary>(store);
+    return await request.get('/api/tasks_summary');
   }
 
   Future<List<Task>> getLatest() async {
-    var req = new Request.get("/api/tasks_latest");
-    var response = await req.executeUserRequest(store);
-
-    switch (response.statusCode) {
-      case 200:
-        {
-          var list = (response.body as List<dynamic>)
-              .map((o) => Task.fromJson(o))
-              .toList();
-          return list;
-        }
-        break;
-
-      default:
-        throw (response.body is Map<String, dynamic>)
-            ? response.body["error"]
-            : response.body;
-    }
+    var request = Request<Task>(store);
+    return await request.getList('/api/tasks_latest');
   }
 }
